@@ -7,16 +7,18 @@ import Activity from '@/lib/models/Activity';
 import HomePageClient from '@/components/HomePageClient';
 import { redirect } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
-  
+
   // Check if user is admin and redirect to admin dashboard
   if (session?.user?.role === 'admin') {
     redirect('/admin');
   }
-  
+
   await connectDB();
-  
+
   const featuredProducts = await Product.find({ featured: true, isActive: true })
     .limit(4)
     .lean();
@@ -33,7 +35,7 @@ export default async function HomePage() {
   }
 
   return (
-    <HomePageClient 
+    <HomePageClient
       session={session}
       user={user ? JSON.parse(JSON.stringify(user)) : null}
       featuredProducts={JSON.parse(JSON.stringify(featuredProducts))}

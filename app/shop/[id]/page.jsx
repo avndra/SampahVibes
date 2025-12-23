@@ -6,6 +6,8 @@ import User from '@/lib/models/User';
 import { notFound } from 'next/navigation';
 import ProductDetailClient from '@/components/ProductDetailClient';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ProductDetailPage({ params }) {
   const { id } = await params;
 

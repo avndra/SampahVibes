@@ -4,6 +4,9 @@ import Product from '@/lib/models/Product';
 import Activity from '@/lib/models/Activity';
 import ModernAdminDashboard from '@/components/admin/ModernAdminDashboard';
 
+// Prevent prerendering - requires database connection at runtime
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboardPage() {
   await connectDB();
 
