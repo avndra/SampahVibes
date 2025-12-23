@@ -19,11 +19,17 @@ export async function POST(req) {
       return NextResponse.json({ error: 'No barcode provided' }, { status: 400 });
     }
 
-    // 1. Call Python Service
+    // 1. Call Python Service (Vercel Serverless or local)
     let scanResult;
     try {
-      const pythonServiceUrl = process.env.PYTHON_SERVICE_URL || 'http://127.0.0.1:8000';
-      const pythonResponse = await fetch(`${pythonServiceUrl}/scan-barcode`, {
+      // In production (Vercel), use internal routing. In development, use localhost
+      const isVercel = process.env.VERCEL === '1';
+      const baseUrl = isVercel
+        ? `https://${process.env.VERCEL_URL}`
+        : (process.env.PYTHON_SERVICE_URL || 'http://127.0.0.1:8000');
+
+      const endpoint = isVercel ? '/api/python/scan' : '/scan-barcode';
+      const pythonResponse = await fetch(`${baseUrl}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: barcode }),
