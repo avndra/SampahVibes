@@ -22,16 +22,17 @@ export async function POST(req) {
     // 1. Call Python Service
     let scanResult;
     try {
-      const pythonResponse = await fetch('http://127.0.0.1:8000/scan-barcode', {
+      const pythonServiceUrl = process.env.PYTHON_SERVICE_URL || 'http://127.0.0.1:8000';
+      const pythonResponse = await fetch(`${pythonServiceUrl}/scan-barcode`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: barcode }),
       });
-      
+
       if (!pythonResponse.ok) {
         throw new Error('Python service error');
       }
-      
+
       scanResult = await pythonResponse.json();
     } catch (error) {
       console.error("Python Service Error:", error);
@@ -46,7 +47,7 @@ export async function POST(req) {
 
     // 2. Save to Database
     await connectDB();
-    
+
     const user = await User.findById(session.user.id);
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
@@ -54,12 +55,12 @@ export async function POST(req) {
     user.totalPoints += scanResult.pointsEarned;
     user.totalWeight += scanResult.weight; // Add weight
     user.totalDeposits += 1;
-    
+
     // Monthly points tracking
     const currentMonth = new Date().toLocaleString('default', { month: 'long' });
     if (!user.monthlyPoints) user.monthlyPoints = {};
     user.monthlyPoints.set(currentMonth, (user.monthlyPoints.get(currentMonth) || 0) + scanResult.pointsEarned);
-    
+
     await user.save();
 
     // Create Activity Log

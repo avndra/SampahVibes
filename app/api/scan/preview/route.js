@@ -19,7 +19,8 @@ export async function POST(req) {
         // Call Python Service for preview (no database save)
         let scanResult;
         try {
-            const pythonResponse = await fetch('http://127.0.0.1:8000/scan-barcode', {
+            const pythonServiceUrl = process.env.PYTHON_SERVICE_URL || 'http://127.0.0.1:8000';
+            const pythonResponse = await fetch(`${pythonServiceUrl}/scan-barcode`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ code: barcode }),
