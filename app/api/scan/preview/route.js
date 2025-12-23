@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { scanBarcodeLogic } from '@/lib/scan-logic';
 
 export async function POST(req) {
     try {
@@ -16,25 +17,11 @@ export async function POST(req) {
             return NextResponse.json({ error: 'No barcode provided' }, { status: 400 });
         }
 
-        // Call Python Service for preview (no database save)
-        let scanResult;
-        try {
-            const pythonServiceUrl = process.env.PYTHON_SERVICE_URL || 'http://127.0.0.1:8000';
-            const pythonResponse = await fetch(`${pythonServiceUrl}/scan-barcode`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: barcode }),
-            });
+        // Process barcode scanning (integrated logic)
+        const scanResult = await scanBarcodeLogic(barcode);
 
-            if (!pythonResponse.ok) {
-                const errorData = await pythonResponse.json();
-                return NextResponse.json({ error: errorData.detail || 'Barcode tidak dikenali' }, { status: 400 });
-            }
-
-            scanResult = await pythonResponse.json();
-        } catch (error) {
-            console.error("Python Service Error:", error);
-            return NextResponse.json({ error: 'Gagal menghubungi scanner service' }, { status: 500 });
+        if (scanResult.error) {
+            return NextResponse.json({ error: scanResult.error }, { status: scanResult.status });
         }
 
         // Return preview data only (no save)
