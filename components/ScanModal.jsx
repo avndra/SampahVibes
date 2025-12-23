@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Loader2, Scan, Sparkles, TrendingUp, RefreshCw, X } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
-import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Html5QrcodeScanner, Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 export default function ScanModal({ open, onClose }) {
@@ -34,63 +34,65 @@ export default function ScanModal({ open, onClose }) {
 
   // Start Scanner when modal opens and user clicks "Start"
   useEffect(() => {
+    let html5QrCode;
+
     if (scanning && open && !result && !isScannerRunning.current) {
       isScannerRunning.current = true;
 
       // Initialize scanner with a slight delay to ensure DOM is ready
       setTimeout(() => {
+        const readerElement = document.getElementById("reader");
+        if (!readerElement) {
+          console.warn("Reader element missing, skipping init");
+          isScannerRunning.current = false;
+          return;
+        }
+
         try {
-          // Double check element existence before init
-          const readerElement = document.getElementById("reader");
-          if (!readerElement) {
-            console.warn("Reader element missing, skipping init");
-            isScannerRunning.current = false;
-            return;
-          }
+          html5QrCode = new Html5Qrcode("reader");
+          scannerRef.current = html5QrCode;
 
-          const scanner = new Html5QrcodeScanner(
-            "reader",
-            {
-              fps: 10,
-              aspectRatio: 1.0,
-              formatsToSupport: [
-                Html5QrcodeSupportedFormats.EAN_13,
-                Html5QrcodeSupportedFormats.EAN_8,
-                Html5QrcodeSupportedFormats.UPC_A,
-                Html5QrcodeSupportedFormats.UPC_E,
-                Html5QrcodeSupportedFormats.CODE_128,
-                Html5QrcodeSupportedFormats.CODE_39
-              ],
-              videoConstraints: {
-                facingMode: "environment",
-                width: { min: 640, ideal: 1280, max: 1920 },
-                height: { min: 480, ideal: 720, max: 1080 },
-              }
-            },
-            /* verbose= */ false
-          );
+          const config = {
+            fps: 10,
+            aspectRatio: 1.0,
+            qrbox: { width: 250, height: 250 },
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.UPC_A,
+              Html5QrcodeSupportedFormats.UPC_E,
+              Html5QrcodeSupportedFormats.CODE_128,
+              Html5QrcodeSupportedFormats.CODE_39
+            ]
+          };
 
-          scanner.render(
+          html5QrCode.start(
+            { facingMode: "environment" },
+            config,
             (decodedText) => {
               // Real-time: Show preview first, don't process yet
               handleBarcodeDetected(decodedText);
-              try {
-                scanner.clear();
-              } catch (e) {
-                console.warn("Failed to clear scanner after success", e);
-              }
-              setScanning(false);
-              isScannerRunning.current = false;
+
+              // Stop scanning immediately after detection
+              html5QrCode.stop().then(() => {
+                scannerRef.current = null;
+                setScanning(false);
+                isScannerRunning.current = false;
+              }).catch(err => console.warn("Failed to stop scanner", err));
             },
             (errorMessage) => {
-              // console.log(errorMessage);
+              // ensure we don't flood logs
             }
-          );
+          ).catch((err) => {
+            console.error("Scanner start error:", err);
+            setError("Gagal mengakses kamera. Izinkan akses kamera di browser Anda.");
+            setScanning(false);
+            isScannerRunning.current = false;
+          });
 
-          scannerRef.current = scanner;
         } catch (err) {
           console.error("Scanner init error:", err);
-          setError("Failed to start camera. Please ensure permissions are granted.");
+          setError("Gagal menginisialisasi kamera.");
           setScanning(false);
           isScannerRunning.current = false;
         }
@@ -99,7 +101,15 @@ export default function ScanModal({ open, onClose }) {
 
     return () => {
       if (scannerRef.current) {
-        scannerRef.current.clear().catch(err => console.warn("Failed to clear scanner", err));
+        // Only attempt to stop if it's actually running
+        try {
+          if (scannerRef.current.isScanning) {
+            scannerRef.current.stop().catch(console.warn);
+          }
+          scannerRef.current.clear().catch(console.warn);
+        } catch (e) {
+          // ignore cleanup errors
+        }
         scannerRef.current = null;
         isScannerRunning.current = false;
       }
