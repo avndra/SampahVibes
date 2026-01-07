@@ -74,6 +74,7 @@ export default function ActivityFeed({ activities, className = "" }) {
 
                   {/* Admin Note Display */}
                   {activity.adminNote && (
+                    
                     <div className="mt-2 bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg border border-blue-100 dark:border-blue-800/30 text-xs text-blue-700 dark:text-blue-300 flex gap-2 items-start">
                       <MessageSquare className="w-3 h-3 mt-0.5 flex-shrink-0" />
                       <div>
@@ -95,9 +96,11 @@ export default function ActivityFeed({ activities, className = "" }) {
                 }`}>
                 {activity.type !== 'redeem' ? '+' : ''}{activity.points}
               </div>
+              
             </div>
           </div>
         ))}
+        
       </div>
     </div>
   );

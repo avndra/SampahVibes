@@ -14,7 +14,7 @@ import Icon from '@/components/Icon';
 
 const menuItems = [
   { href: '/admin', icon: 'admin_dashboard', label: 'Dashboard', exact: true },
-  { href: '/admin/orders', icon: 'cart', label: 'Orders' },
+  { href: '/admin/orders', icon: 'orderlist', label: 'Orders' },
   { href: '/admin/products', icon: 'admin_products', label: 'Products' },
   { href: '/admin/users', icon: 'user', label: 'Users' },
   { href: '/admin/activities', icon: 'points_earned', label: 'Activities' },

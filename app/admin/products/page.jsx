@@ -131,10 +131,12 @@ export default function ModernAdminProductsPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button onClick={() => setFormOpen(true)} className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-lg shadow-green-600/20">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Product
-          </Button>
+          <button onClick={() => setFormOpen(true)} className="btn-add-animated w-full sm:w-auto">
+            <span>
+              <Plus className="h-4 w-4" />
+              Add Product
+            </span>
+          </button>
         </div>
       </div>
 
