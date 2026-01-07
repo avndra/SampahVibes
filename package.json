@@ -19,6 +19,7 @@
     "bcryptjs": "^2.4.3",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.0",
+    "cloudinary": "^2.8.0",
     "clsx": "^2.0.0",
     "eslint-config-next": "^16.0.7",
     "html5-qrcode": "^2.3.8",
