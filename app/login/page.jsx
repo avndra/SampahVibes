@@ -226,6 +226,48 @@ export default function LoginPage() {
 
 
 
+
+
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white dark:bg-gray-900 text-gray-500">
+                  {isLogin ? 'Atau masuk dengan' : 'Atau daftar dengan'}
+                </span>
+              </div>
+            </div>
+
+            <Button
+              variant="outlined"
+              fullWidth
+              onClick={() => signIn('google', { callbackUrl: '/' })}
+              sx={{
+                height: 56,
+                borderRadius: 3,
+                textTransform: 'none',
+                fontSize: '1rem',
+                fontWeight: 700,
+                color: '#374151',
+                borderColor: '#e5e7eb',
+                '&:hover': {
+                  borderColor: '#d1d5db',
+                  backgroundColor: '#f9fafb'
+                }
+              }}
+              className="dark:text-white dark:border-gray-700 dark:hover:bg-gray-800"
+            >
+              <Image
+                src="https://www.svgrepo.com/show/475656/google-color.svg"
+                alt="Google"
+                width={24}
+                height={24}
+                className="mr-3"
+              />
+              Continue with Google
+            </Button>
+
             {/* Toggle */}
             <p className="mt-6 text-center text-gray-600 dark:text-gray-400 font-semibold">
               {isLogin ? "Belum punya akun? " : "Sudah punya akun? "}
@@ -285,5 +327,6 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+
   );
 }

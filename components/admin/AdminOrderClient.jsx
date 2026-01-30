@@ -112,20 +112,34 @@ export default function AdminOrderClient({ initialOrders }) {
           />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto no-scrollbar">
-          {['all', 'pending', 'approved', 'shipped', 'completed', 'rejected'].map(status => (
-            <Button
-              key={status}
-              variant={statusFilter === status ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter(status)}
-              className={`capitalize whitespace-nowrap rounded-lg border-gray-200 ${statusFilter === status
-                  ? 'bg-green-600 hover:bg-green-700 text-white shadow-md shadow-green-600/20 border-transparent'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-                }`}
-            >
-              {status}
-            </Button>
-          ))}
+          {[
+            { id: 'all', label: 'All', icon: Package, activeBg: 'bg-gradient-to-r from-green-500 to-green-600', activeShadow: 'shadow-green-500/25', iconColor: 'text-green-500' },
+            { id: 'pending', label: 'Pending', icon: Clock, activeBg: 'bg-gradient-to-r from-yellow-500 to-amber-500', activeShadow: 'shadow-yellow-500/25', iconColor: 'text-yellow-500' },
+            { id: 'approved', label: 'Approved', icon: CheckCircle, activeBg: 'bg-gradient-to-r from-blue-500 to-blue-600', activeShadow: 'shadow-blue-500/25', iconColor: 'text-blue-500' },
+            { id: 'shipped', label: 'Shipped', icon: Truck, activeBg: 'bg-gradient-to-r from-purple-500 to-purple-600', activeShadow: 'shadow-purple-500/25', iconColor: 'text-purple-500' },
+            { id: 'completed', label: 'Completed', icon: CheckCircle, activeBg: 'bg-gradient-to-r from-emerald-500 to-emerald-600', activeShadow: 'shadow-emerald-500/25', iconColor: 'text-emerald-500' },
+            { id: 'rejected', label: 'Rejected', icon: XCircle, activeBg: 'bg-gradient-to-r from-red-500 to-red-600', activeShadow: 'shadow-red-500/25', iconColor: 'text-red-500' },
+          ].map(status => {
+            const Icon = status.icon;
+            const isActive = statusFilter === status.id;
+
+            return (
+              <button
+                key={status.id}
+                onClick={() => setStatusFilter(status.id)}
+                className={`
+                  flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-200
+                  ${isActive
+                    ? `${status.activeBg} text-white shadow-lg ${status.activeShadow}`
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }
+                `}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : status.iconColor}`} />
+                {status.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -213,12 +227,13 @@ export default function AdminOrderClient({ initialOrders }) {
               {/* Actions */}
               <div className="flex md:flex-col gap-2 justify-center border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6 min-w-[140px]">
                 <Button
-                  className="w-full bg-gray-900 text-white hover:bg-gray-800 rounded-xl shadow-lg shadow-gray-900/10"
+                  className="w-full bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:text-green-600 hover:border-green-200 rounded-xl shadow-sm transition-all group/btn"
                   onClick={() => {
                     setSelectedOrder(order);
                     setAdminNote(order.adminNote || '');
                   }}
                 >
+                  <MoreVertical className="w-4 h-4 mr-2 text-gray-400 group-hover/btn:text-green-500 transition-colors" />
                   Manage Order
                 </Button>
               </div>
@@ -246,25 +261,48 @@ export default function AdminOrderClient({ initialOrders }) {
         <div className="space-y-6">
           <div>
             <h3 className="font-bold text-gray-900 mb-3">Update Status</h3>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {[
-                { id: 'pending', label: 'Pending', color: 'bg-yellow-500 hover:bg-yellow-600' },
-                { id: 'approved', label: 'Approve', color: 'bg-blue-600 hover:bg-blue-700' },
-                { id: 'shipped', label: 'Ship', color: 'bg-purple-600 hover:bg-purple-700' },
-                { id: 'completed', label: 'Complete', color: 'bg-green-600 hover:bg-green-700' },
-                { id: 'rejected', label: 'Reject', color: 'bg-red-600 hover:bg-red-700' },
-              ].map((status) => (
-                <Button
-                  key={status.id}
-                  size="sm"
-                  variant={selectedOrder?.status === status.id ? 'default' : 'outline'}
-                  onClick={() => handleUpdateStatus(status.id)}
-                  disabled={isUpdating}
-                  className={`rounded-lg ${selectedOrder?.status === status.id ? `${status.color} text-white border-transparent` : 'border-gray-200 text-gray-600'}`}
-                >
-                  {status.label}
-                </Button>
-              ))}
+                { id: 'pending', label: 'Pending', icon: Clock, color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200', desc: 'Awaiting process' },
+                { id: 'approved', label: 'Approve', icon: CheckCircle, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200', desc: 'Ready to pack' },
+                { id: 'shipped', label: 'Ship Order', icon: Truck, color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200', desc: 'On the way' },
+                { id: 'completed', label: 'Complete', icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200', desc: 'Delivered' },
+                { id: 'rejected', label: 'Reject', icon: XCircle, color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200', desc: 'Cancel order' },
+              ].map((status) => {
+                const Icon = status.icon;
+                const isActive = selectedOrder?.status === status.id;
+
+                return (
+                  <button
+                    key={status.id}
+                    onClick={() => handleUpdateStatus(status.id)}
+                    disabled={isUpdating}
+                    className={`
+                      relative flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-200
+                      ${isActive
+                        ? `${status.bg} ${status.border} ring-2 ring-offset-1 ring-${status.color.split('-')[1]}-400`
+                        : 'bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                      }
+                    `}
+                  >
+                    <div className={`p-2 rounded-full mb-2 ${isActive ? 'bg-white/50' : 'bg-gray-100'}`}>
+                      <Icon className={`w-5 h-5 ${status.color}`} />
+                    </div>
+                    <span className={`text-sm font-bold ${isActive ? 'text-gray-900' : 'text-gray-600'}`}>
+                      {status.label}
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-medium mt-1">
+                      {status.desc}
+                    </span>
+
+                    {isActive && (
+                      <div className="absolute top-2 right-2">
+                        <span className={`flex h-2 w-2 rounded-full ${status.color.replace('text', 'bg')}`}></span>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

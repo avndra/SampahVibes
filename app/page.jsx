@@ -28,6 +28,12 @@ export default async function HomePage() {
 
   if (session?.user?.id && session.user.id !== 'demo-user-id') {
     user = await User.findById(session.user.id).lean();
+
+    // If user was deleted or banned by admin, force logout
+    if (!user || user.isBanned) {
+      redirect('/api/auth/signout?callbackUrl=/login');
+    }
+
     recentActivities = await Activity.find({ userId: session.user.id })
       .sort({ timestamp: -1 })
       .limit(5)

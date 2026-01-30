@@ -8,9 +8,6 @@ export default function ProductCard({ product, userPoints = 0 }) {
   const [isMounted, setIsMounted] = useState(false);
   
   // Mock data
-  const location = "Jakarta Pusat";
-  const rating = 4.8;
-  const sold = Math.floor(Math.random() * 500) + 10;
 
   useEffect(() => {
     setIsMounted(true);
@@ -58,26 +55,9 @@ export default function ProductCard({ product, userPoints = 0 }) {
             </div>
           </div>
 
-          {/* Location & Rating */}
-          <div className="mt-auto pt-1 space-y-0.5 hidden md:block">
-            <div className="flex items-center gap-1 text-[10px] md:text-xs text-gray-500 dark:text-gray-400">
-                <MapPin className="w-3 h-3" />
-                <span className="truncate max-w-[100px]">{location}</span>
-            </div>
 
-            <div className="flex items-center gap-1 text-[10px] md:text-xs text-gray-500 dark:text-gray-400">
-                <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                <span className="text-gray-700 dark:text-gray-300">{rating}</span>
-                <span className="w-0.5 h-0.5 bg-gray-400 rounded-full"></span>
-                <span>{sold}+ terjual</span>
-            </div>
-          </div>
           
-          {/* Mobile Only Compact Rating */}
-          <div className="md:hidden flex items-center gap-1 mt-auto pt-1">
-             <Star className="w-2.5 h-2.5 text-yellow-400 fill-yellow-400" />
-             <span className="text-[9px] text-gray-500">{rating} | {sold}+</span>
-          </div>
+
         </div>
       </div>
     </Link>

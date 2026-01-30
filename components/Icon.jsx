@@ -16,7 +16,7 @@ const iconMap = {
 
   // Admin Icons
   'admin_dashboard': '/icons/admin_dashboard.png',
-  'admin_products': '/icons/admin_products.png',
+  'admin_products': '/icons/box.png',
   'admin_settings': '/icons/admin_settings.png',
   'orderlist': '/icons/orderlist.png',
   'add': '/icons/add.png',

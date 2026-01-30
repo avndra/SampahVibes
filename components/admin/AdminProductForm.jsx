@@ -13,9 +13,10 @@ import {
   Switch,
   Box,
   IconButton,
-  CircularProgress
+  CircularProgress,
+  Typography
 } from '@mui/material';
-import { Close, CloudUpload } from '@mui/icons-material';
+import { Close, CloudUpload, Delete } from '@mui/icons-material';
 import { createProduct, updateProduct } from '@/lib/actions/products';
 import { toast } from 'sonner';
 import { PRODUCT_CATEGORIES } from '@/lib/config';
@@ -23,8 +24,7 @@ import { PRODUCT_CATEGORIES } from '@/lib/config';
 export default function AdminProductForm({ open, onClose, product }) {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [files, setFiles] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -32,6 +32,7 @@ export default function AdminProductForm({ open, onClose, product }) {
     pointsCost: '',
     stock: '',
     image: '',
+    images: [],
     isActive: true,
     featured: false,
   });
@@ -45,10 +46,10 @@ export default function AdminProductForm({ open, onClose, product }) {
         pointsCost: product.pointsCost || '',
         stock: product.stock || '',
         image: product.image || '',
+        images: product.images && product.images.length > 0 ? product.images : (product.image ? [product.image] : []),
         isActive: product.isActive ?? true,
         featured: product.featured || false,
       });
-      setPreview(product.image || null);
     } else {
       setFormData({
         name: '',
@@ -57,49 +58,56 @@ export default function AdminProductForm({ open, onClose, product }) {
         pointsCost: '',
         stock: '',
         image: '',
+        images: [],
         isActive: true,
         featured: false,
       });
-      setPreview(null);
     }
-    setFile(null); // Reset file on open/product change
+    setFiles([]); // Reset files on open/product change
   }, [product, open]);
-  
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result);
-      };
-      reader.readAsDataURL(selectedFile);
+
+  const handleMultiFileChange = (e) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setFiles(prev => [...prev, ...newFiles]);
     }
+  };
+
+  const handleRemoveImage = (index) => {
+    const updatedImages = [...formData.images];
+    updatedImages.splice(index, 1);
+    setFormData(prev => ({
+      ...prev,
+      images: updatedImages,
+      image: updatedImages.length > 0 ? updatedImages[0] : '' // Ensure main image is sync
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    let imageUrl = formData.image;
+    let currentImages = [...formData.images];
 
-    // If a new file is selected, upload it first
-    if (file) {
+    // Upload new files
+    if (files.length > 0) {
       setUploading(true);
       try {
-        const fileData = new FormData();
-        fileData.append('file', file);
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: fileData,
+        const uploadPromises = files.map(async (file) => {
+          const fileData = new FormData();
+          fileData.append('file', file);
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: fileData,
+          });
+          const result = await res.json();
+          if (!result.success) throw new Error(result.error);
+          return result.url;
         });
 
-        const uploadResult = await res.json();
+        const newImageUrls = await Promise.all(uploadPromises);
+        currentImages = [...currentImages, ...newImageUrls];
 
-        if (!uploadResult.success) {
-          throw new Error(uploadResult.error || 'Upload failed');
-        }
-        imageUrl = uploadResult.url;
       } catch (error) {
         toast.error(`Image upload failed: ${error.message}`);
         setUploading(false);
@@ -109,9 +117,17 @@ export default function AdminProductForm({ open, onClose, product }) {
       setUploading(false);
     }
 
-    const finalFormData = { ...formData, image: imageUrl };
+    // Ensure we have at least one image if possible, or use placeholder logic if needed.
+    // Sync main 'image' field with the first image in array
+    const mainImage = currentImages.length > 0 ? currentImages[0] : formData.image;
 
-    const result = product 
+    const finalFormData = {
+      ...formData,
+      images: currentImages,
+      image: mainImage
+    };
+
+    const result = product
       ? await updateProduct(product._id, finalFormData)
       : await createProduct(finalFormData);
 
@@ -126,17 +142,17 @@ export default function AdminProductForm({ open, onClose, product }) {
   };
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose} 
-      maxWidth="sm" 
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
       fullWidth
       PaperProps={{
         sx: { borderRadius: 3 }
       }}
     >
       <DialogTitle sx={{ fontWeight: 'black', fontSize: '1.5rem', pr: 6 }}>
-        {product ? '✏️ Edit Product' : '➕ Add New Product'}
+        {product ? 'Edit Product' : 'Add New Product'}
         <IconButton
           onClick={onClose}
           sx={{ position: 'absolute', right: 8, top: 8 }}
@@ -166,8 +182,8 @@ export default function AdminProductForm({ open, onClose, product }) {
               fullWidth
               InputProps={{ sx: { fontWeight: 'bold' } }}
             />
-            
-            <Box sx={{ display: 'flex', gap: 2}}>
+
+            <Box sx={{ display: 'flex', gap: 2 }}>
               <TextField
                 select
                 label="Category"
@@ -203,28 +219,58 @@ export default function AdminProductForm({ open, onClose, product }) {
               />
             </Box>
 
+            {/* Multiple Image Upload Section */}
             <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>Product Images</Typography>
+
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, mb: 2 }}>
+                {/* Existing Images */}
+                {formData.images.map((img, index) => (
+                  <Box key={index} sx={{ position: 'relative', aspectRatio: '1/1' }}>
+                    <img
+                      src={img}
+                      alt={`preview-${index}`}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8, border: '1px solid #eee' }}
+                    />
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleRemoveImage(index)}
+                      sx={{ position: 'absolute', top: 2, right: 2, bgcolor: 'rgba(255,255,255,0.8)', '&:hover': { bgcolor: 'white' } }}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ))}
+
+                {/* Pending Upload Files Previews (Simple count or name for now) */}
+                {files.map((file, i) => (
+                  <Box key={`new-${i}`} sx={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    bgcolor: '#f5f5f5', borderRadius: 2, border: '1px dashed #ccc', aspectRatio: '1/1',
+                    fontSize: '0.6rem', textAlign: 'center', p: 0.5
+                  }}>
+                    New: {file.name.substring(0, 10)}...
+                  </Box>
+                ))}
+              </Box>
+
               <Button
                 variant="outlined"
                 component="label"
                 startIcon={<CloudUpload />}
                 sx={{
-                  borderRadius: 2, 
+                  borderRadius: 2,
                   fontWeight: 'bold',
                   textTransform: 'none'
                 }}
               >
-                Upload Image
-                <input type="file" hidden accept="image/*" onChange={handleFileChange} />
+                Add Images
+                <input type="file" multiple hidden accept="image/*" onChange={handleMultiFileChange} />
               </Button>
               {uploading && <CircularProgress size={20} sx={{ ml: 2 }} />}
+              {(files.length > 0) && <Typography variant="caption" sx={{ ml: 2 }}>{files.length} new files selected</Typography>}
             </Box>
-            
-            {preview && (
-              <Box sx={{ mt: 2, textAlign: 'center' }}>
-                <img src={preview} alt="Product Preview" style={{ maxWidth: '100%', height: 'auto', maxHeight: '200px', borderRadius: '8px' }} />
-              </Box>
-            )}
 
             <Box sx={{ display: 'flex', gap: 2 }}>
               <FormControlLabel
@@ -253,23 +299,23 @@ export default function AdminProductForm({ open, onClose, product }) {
         </DialogContent>
 
         <DialogActions sx={{ p: 2.5 }}>
-          <Button 
-            onClick={onClose} 
+          <Button
+            onClick={onClose}
             variant="outlined"
-            sx={{ 
-              borderRadius: 2, 
+            sx={{
+              borderRadius: 2,
               fontWeight: 'bold',
               textTransform: 'none'
             }}
           >
             Cancel
           </Button>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             variant="contained"
             disabled={loading || uploading}
-            sx={{ 
-              borderRadius: 2, 
+            sx={{
+              borderRadius: 2,
               fontWeight: 'bold',
               textTransform: 'none'
             }}

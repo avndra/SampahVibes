@@ -4,21 +4,24 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
-  Star,
-  Menu,
-  X,
-  LogOut
+  LayoutDashboard,
+  ShoppingCart,
+  Package,
+  Users,
+  Activity,
+  Settings,
+  LogOut,
+  Star
 } from 'lucide-react';
 import { useState } from 'react';
-import Icon from '@/components/Icon';
 
 const menuItems = [
-  { href: '/admin', icon: 'admin_dashboard', label: 'Dashboard', exact: true },
-  { href: '/admin/orders', icon: 'orderlist', label: 'Orders' },
-  { href: '/admin/products', icon: 'admin_products', label: 'Products' },
-  { href: '/admin/users', icon: 'user', label: 'Users' },
-  { href: '/admin/activities', icon: 'points_earned', label: 'Activities' },
-  { href: '/admin/settings', icon: 'admin_settings', label: 'Settings' },
+  { href: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
+  { href: '/admin/orders', icon: ShoppingCart, label: 'Orders' },
+  { href: '/admin/products', icon: Package, label: 'Products' },
+  { href: '/admin/users', icon: Users, label: 'Users' },
+  { href: '/admin/activities', icon: Activity, label: 'Activities' },
+  { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
 export default function ModernAdminSidebar({ session, isOpen, onClose }) {
@@ -54,15 +57,20 @@ export default function ModernAdminSidebar({ session, isOpen, onClose }) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-lg shadow-green-900/50">
-                <Star className="h-5 w-5 text-white" />
-              </div>
+            <Link href="/admin" className="flex items-center gap-3 group">
+              <img
+                src="/icons/logo2.png"
+                alt="RecycleVibes Logo"
+                className="w-12 h-12 object-contain"
+              />
               <div>
-                <h1 className="text-xl font-black text-white tracking-tight">E-Recycle</h1>
+                <span className="text-xl tracking-wide flex items-baseline gap-0.5">
+                  <span className="text-white font-[family-name:var(--font-satisfy)]">Recycle</span>
+                  <span className="bg-gradient-to-tr from-green-400 to-teal-400 bg-clip-text text-transparent font-[family-name:var(--font-shadows)] font-bold">vibes</span>
+                </span>
                 <p className="text-xs text-green-400 font-bold uppercase tracking-wider">Admin Panel</p>
               </div>
-            </div>
+            </Link>
           </div>
 
           {/* Navigation */}
@@ -70,6 +78,7 @@ export default function ModernAdminSidebar({ session, isOpen, onClose }) {
             <div className="space-y-1">
               {menuItems.map((item) => {
                 const active = isActive(item.href, item.exact);
+                const IconComponent = item.icon;
 
                 return (
                   <Link
@@ -87,7 +96,7 @@ export default function ModernAdminSidebar({ session, isOpen, onClose }) {
                     `}
                   >
                     <div className={`p-1 rounded-md transition-colors ${active ? 'bg-green-500/20' : 'bg-transparent group-hover:bg-white/10'}`}>
-                      <Icon name={item.icon} size={18} className={active ? 'text-green-400' : 'text-gray-400 group-hover:text-white'} />
+                      <IconComponent size={20} className={active ? 'text-green-400' : 'text-gray-400 group-hover:text-white'} />
                     </div>
                     <span>{item.label}</span>
                     {active && (
@@ -101,7 +110,7 @@ export default function ModernAdminSidebar({ session, isOpen, onClose }) {
             {/* Logout Button */}
             <div className="pt-4 border-t border-white/10">
               <button
-                onClick={() => signOut()}
+                onClick={() => signOut({ callbackUrl: '/login' })}
                 className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors w-full text-red-400 hover:bg-red-500/10 hover:text-red-300"
               >
                 <LogOut className="h-5 w-5" />
@@ -113,8 +122,12 @@ export default function ModernAdminSidebar({ session, isOpen, onClose }) {
           {/* User Profile */}
           <div className="p-4 border-t border-white/10 bg-black/20">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center text-white font-bold shadow-lg border-2 border-[#0a1f1f]">
-                {session.user.name.charAt(0)}
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center text-white font-bold shadow-lg border-2 border-[#0a1f1f] overflow-hidden">
+                {session?.user?.avatar ? (
+                  <img src={session.user.avatar} alt={session.user.name} className="w-full h-full object-cover" />
+                ) : (
+                  session?.user?.name?.charAt(0) || 'A'
+                )}
               </div>
               <div className="overflow-hidden">
                 <p className="font-bold text-white truncate">{session.user.name}</p>

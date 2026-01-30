@@ -28,6 +28,33 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
+    // Create Notification if status is important
+    if (['shipped', 'completed', 'rejected'].includes(status)) {
+      const Notification = (await import('@/lib/models/Notification')).default;
+
+      let title = 'Update Pesanan';
+      let message = `Status pesanan ${updatedOrder.productName} anda telah diperbarui menjadi: ${status}.`;
+
+      if (status === 'shipped') {
+        title = 'Pesanan Dikirim!';
+        message = `Hore! Pesanan ${updatedOrder.productName} sedang dalam perjalanan. ${adminNote ? `Catatan: ${adminNote}` : ''}`;
+      } else if (status === 'completed') {
+        title = 'Pesanan Selesai';
+        message = `Pesanan ${updatedOrder.productName} telah selesai. Terima kasih telah menukarkan poin!`;
+      } else if (status === 'rejected') {
+        title = 'Pesanan Dibatalkan';
+        message = `Maaf, pesanan ${updatedOrder.productName} dibatalkan. ${adminNote ? `Alasan: ${adminNote}` : ''}`;
+      }
+
+      await Notification.create({
+        userId: updatedOrder.userId._id,
+        type: 'order_update',
+        title,
+        message,
+        link: '/profile' // Redirect to profile to see history
+      });
+    }
+
     return NextResponse.json(updatedOrder);
   } catch (error) {
     console.error('Update order error:', error);

@@ -131,7 +131,7 @@ function EnvironmentalImpact({ totalWeight }) {
         <div>
           <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-teal-600">
-              Dampak 
+              Dampak
             </span>
             <div className="w-8 h-8 inline-block">
               <DotLottieReact
@@ -214,11 +214,21 @@ function FeaturedProducts({ products }) {
   );
 }
 
+import OnboardingGuide from '@/components/OnboardingGuide';
+
 // --- Main HomePageClient Component ---
 
 export default function HomePageClient({ session, user, featuredProducts, recentActivities }) {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20 overflow-x-hidden">
+
+      {/* Onboarding Guide for New Users */}
+      {session && user && (
+        <OnboardingGuide
+          userPoints={user.totalPoints || 0}
+          userDeposits={user.totalDeposits || 0}
+        />
+      )}
 
       {/* Dynamic Background Pattern */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
@@ -381,10 +391,6 @@ export default function HomePageClient({ session, user, featuredProducts, recent
                 <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-3xl p-6 md:p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-800">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xl font-bold text-gray-800 dark:text-white">Statistik Poin</h3>
-                    <select className="bg-gray-50 dark:bg-gray-800 border-none text-sm font-medium rounded-lg px-3 py-1 text-gray-600 dark:text-gray-300">
-                      <option>Bulan Ini</option>
-                      <option>Tahun Ini</option>
-                    </select>
                   </div>
                   <ProgressChart monthlyPoints={user.monthlyPoints || {}} />
                   <EnvironmentalImpact totalWeight={user.totalWeight || 0} />

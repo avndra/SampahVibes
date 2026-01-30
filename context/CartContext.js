@@ -42,7 +42,7 @@ export function CartProvider({ children }) {
       const data = await response.json();
       if (response.ok) {
         setCart(data);
-        toast.success('Added to cart!');
+        toast.success('Masuk keranjang!');
       } else {
         throw new Error(data.error);
       }
@@ -89,7 +89,7 @@ export function CartProvider({ children }) {
       const data = await response.json();
       if (response.ok) {
         setCart(data);
-        toast.success('Removed from cart.');
+        toast.success('Dihapus dari keranjang.');
       } else {
         throw new Error(data.error);
       }

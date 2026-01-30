@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { Loader2 } from 'lucide-react';
+import Loader from '@/components/Loader';
 
 const AppContext = createContext();
 
@@ -30,6 +30,7 @@ export function AppProvider({ children }) {
       const response = await fetch('/api/user/profile');
       if (response.ok) {
         const data = await response.json();
+        console.log('[AppContext] User data fetched:', { xp: data.xp, level: data.level, name: data.name });
         setUser(data);
       }
     } catch (error) {
@@ -48,11 +49,9 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider value={{ user, loading, refreshUser, session }}>
       {loading ? (
-        <div className="fixed inset-0 flex items-center justify-center bg-white dark:bg-gray-900">
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-8 w-8 animate-spin text-green-600" />
-            <span className="text-xl font-bold text-gray-700 dark:text-gray-300">Loading...</span>
-          </div>
+        <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#0a1f1f]">
+          <Loader />
+          <span className="mt-8 text-xl font-bold text-green-400">Loading...</span>
         </div>
       ) : (
         children

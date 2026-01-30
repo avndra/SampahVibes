@@ -23,7 +23,7 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        const publicRoutes = ['/', '/login', '/shop'];
+        const publicRoutes = ['/', '/login', '/shop', '/help', '/terms', '/privacy'];
         const isPublicRoute = publicRoutes.some(route =>
           req.nextUrl.pathname === route ||
           req.nextUrl.pathname.startsWith('/shop/')

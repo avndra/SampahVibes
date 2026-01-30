@@ -48,8 +48,9 @@ export default async function ProfilePage() {
       .lean()
   ]);
 
-  if (!user) {
-    redirect('/login');
+  if (!user || user.isBanned) {
+    // User was deleted or banned by admin, force logout
+    redirect('/api/auth/signout?callbackUrl=/login');
   }
 
   return (

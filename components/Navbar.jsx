@@ -11,7 +11,8 @@ import { usePathname } from 'next/navigation';
 import CartDrawer from './CartDrawer';
 import Icon from './Icon';
 import ScanModal from './ScanModal';
-import { User, LogOut, Settings, Menu, X, Shield, Home, Gift, Scan, ShoppingCart } from 'lucide-react';
+import { User, LogOut, Settings, Menu, X, Shield, Home, Gift, Scan, ShoppingCart, Bell } from 'lucide-react';
+
 
 export default function Navbar() {
   const { data: session } = useSession();
@@ -19,7 +20,37 @@ export default function Navbar() {
   const { cartCount } = useCart();
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [scanModalOpen, setScanModalOpen] = useState(false);
+
+  const [unreadNotif, setUnreadNotif] = useState(0);
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (session) {
+      // Poll unread count every 30s or on mount
+      const fetchUnread = async () => {
+        try {
+          const res = await fetch('/api/notifications');
+          if (res.ok) {
+            const data = await res.json();
+            setUnreadNotif(data.unreadCount);
+          }
+        } catch (e) { console.error(e); }
+      };
+      fetchUnread();
+      const interval = setInterval(fetchUnread, 30000);
+
+      // Listen for custom event when notifications are marked as read
+      const handleNotificationsRead = () => {
+        setUnreadNotif(0);
+      };
+      window.addEventListener('notificationsRead', handleNotificationsRead);
+
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener('notificationsRead', handleNotificationsRead);
+      };
+    }
+  }, [session]); // Refetch unread count on session change
 
   const isProductDetail = pathname?.startsWith('/shop/') && pathname !== '/shop';
 
@@ -56,11 +87,14 @@ export default function Navbar() {
               {/* Center: Navigation Links (Desktop) */}
               <div className="flex items-center justify-center flex-1">
                 <div className="flex items-center gap-8">
-                  {navItems.map((item) => (
-                    <Link key={item.id} href={item.href} className="nav-link-animated text-base font-bold text-gray-300 dark:text-gray-200 hover:text-green-400 dark:hover:text-green-300 transition-colors py-2">
-                      {item.label}
-                    </Link>
-                  ))}
+                  {navItems.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link key={item.id} href={item.href} className={`nav-link-animated text-base font-bold transition-colors py-2 ${isActive ? 'text-green-400 dark:text-green-300' : 'text-gray-300 dark:text-gray-200 hover:text-green-400 dark:hover:text-green-300'}`}>
+                        {item.label}
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -68,6 +102,21 @@ export default function Navbar() {
               <div className="flex items-center justify-end gap-4">
                 {session ? (
                   <>
+                    <Link href="/notifications">
+                      <IconButton
+                        sx={{ color: '#ffffff', '&:hover': { color: '#e5e7eb', backgroundColor: 'rgba(255, 255, 255, 0.1)' } }}
+                      >
+                        <div className="relative">
+                          <Bell className="w-6 h-6" />
+                          {unreadNotif > 0 && (
+                            <span className="absolute -top-2 -right-2 min-w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1 border-2 border-[#0a1f1f]">
+                              {unreadNotif > 99 ? '99+' : unreadNotif}
+                            </span>
+                          )}
+                        </div>
+                      </IconButton>
+                    </Link>
+
                     <IconButton
                       onClick={() => setCartDrawerOpen(true)}
                       sx={{ color: '#9ca3af', '&:hover': { color: '#ffffff', backgroundColor: 'rgba(255, 255, 255, 0.05)' } }}
@@ -95,12 +144,12 @@ export default function Navbar() {
                         </IconButton>
                       </Link>
                     )}
-                    <IconButton
-                      onClick={() => signOut()}
-                      sx={{ color: '#ef4444', '&:hover': { color: '#f87171', backgroundColor: 'rgba(239, 68, 68, 0.1)' } }}
-                    >
-                      <LogOut size={20} />
-                    </IconButton>
+                    <button onClick={() => signOut()} className="btn-logout">
+                      <span className="sign">
+                        <LogOut size={18} />
+                      </span>
+                      <span className="text">Logout</span>
+                    </button>
                   </>
                 ) : (
                   <div className="flex items-center gap-3">
@@ -140,30 +189,30 @@ export default function Navbar() {
         </nav>
       </header>
 
-      {/* Mobile Top Bar (Logo & Logout only) */}
+      {/* Mobile Top Bar (Logo & Title) */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[#0a1f1f] border-b border-green-500/20 h-16 px-4 flex items-center justify-between pointer-events-auto">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/icons/logo.png"
-            alt="E-Recycle Logo"
-            width={100}
-            height={32}
-            className="object-contain h-8 w-auto"
+            src="/icons/logo2.png"
+            alt="RecycleVibes Logo"
+            width={48}
+            height={48}
+            className="object-contain h-10 w-auto"
             unoptimized
           />
+          <span className="text-xl tracking-wide flex items-baseline gap-0.5">
+            <span className="text-white font-[family-name:var(--font-satisfy)]">Recycle</span>
+            <span className="bg-gradient-to-tr from-green-400 to-teal-400 bg-clip-text text-transparent font-[family-name:var(--font-shadows)] font-bold">vibes</span>
+          </span>
         </Link>
         <div className="flex items-center gap-2">
           {session && (
-            <IconButton
-              onClick={() => signOut()}
-              sx={{
-                color: '#ef4444',
-                '&:hover': { backgroundColor: 'rgba(239, 68, 68, 0.1)' }
-              }}
-              size="small"
-            >
-              <LogOut size={20} />
-            </IconButton>
+            <button onClick={() => signOut()} className="btn-logout">
+              <span className="sign">
+                <LogOut size={18} />
+              </span>
+              <span className="text">Logout</span>
+            </button>
           )}
         </div>
       </div>
@@ -215,7 +264,7 @@ export default function Navbar() {
             <Link href={session ? "/profile" : "/login"} className={`flex flex-col items-center justify-center w-12 h-full ${pathname === '/profile' ? 'text-green-400' : 'text-gray-400'}`}>
               {session && user?.avatar ? (
                 <div className="w-6 h-6 rounded-full overflow-hidden border border-gray-400 mb-0.5">
-                  <Image src={user.avatar} alt="User" width={24} height={24} className="object-cover w-full h-full" />
+                  <img src={user.avatar} alt="User" className="object-cover w-full h-full" />
                 </div>
               ) : (
                 <User className="w-6 h-6 mb-0.5" />

@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { redeemProduct } from '@/lib/actions/redeem';
 import { useCart } from '@/context/CartContext';
 import Modal from '@/components/Modal';
+import PurchaseSuccessModal from '@/components/PurchaseSuccessModal';
 
 export default function ProductDetailClient({ product, userPoints, isLoggedIn }) {
    const router = useRouter();
@@ -32,7 +33,7 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
    const [quantity, setQuantity] = useState(1);
    const [activeTab, setActiveTab] = useState('detail');
    const [isRedeeming, setIsRedeeming] = useState(false);
-   const [selectedImage, setSelectedImage] = useState(product.image);
+   const [selectedImage, setSelectedImage] = useState((product.images && product.images.length > 0) ? product.images[0] : product.image);
 
    // Checkout State
    const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -88,16 +89,14 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
       });
    };
 
-   // Mock Data
-   const rating = 4.8;
-   const soldCount = 250;
-   const reviewCount = 120;
-   const shopName = "Official E-Recycle Store";
-   const shopLocation = "Jakarta Pusat";
 
-   const images = [product.image, product.image, product.image];
+
+   const images = (product.images && product.images.length > 0) ? product.images : [product.image];
    const totalPrice = product.pointsCost * quantity;
    const canRedeem = userPoints >= totalPrice && product.stock >= quantity;
+
+   const [successModalOpen, setSuccessModalOpen] = useState(false);
+   const [lastTransaction, setLastTransaction] = useState(null);
 
    const handleOpenCheckout = () => {
       if (!isLoggedIn) return router.push('/login');
@@ -116,13 +115,14 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
          const result = await redeemProduct(product._id, quantity, shippingData);
          if (result.success) {
             setCheckoutOpen(false);
+            setLastTransaction(result.transaction);
+            setSuccessModalOpen(true); // Show success modal
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            toast.success(result.message);
-            router.push('/profile');
          } else {
             toast.error(result.error || 'Gagal menukar.');
          }
       } catch (error) {
+         console.error(error);
          toast.error('Terjadi kesalahan.');
       } finally {
          setIsRedeeming(false);
@@ -132,7 +132,6 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
    const handleAddToCart = () => {
       if (!isLoggedIn) return router.push('/login');
       addToCart(product._id, quantity);
-      toast.success('Masuk keranjang!');
    };
 
    return (
@@ -164,7 +163,7 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
                {/* Left Column: Images */}
                <div className="lg:col-span-4 space-y-4">
                   {/* Main Image - Mobile: Full Width Aspect 1:1, Desktop: Rounded */}
-                  <div className="relative w-full aspect-square md:rounded-xl overflow-hidden border-b md:border border-gray-200 dark:border-gray-700 sticky top-0 md:top-24">
+                  <div className="relative w-full aspect-square md:rounded-xl overflow-hidden border-b md:border border-gray-200 dark:border-gray-700">
                      <img
                         src={selectedImage}
                         alt={product.name}
@@ -195,7 +194,7 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
                   <div>
                      <div className="flex justify-between items-start">
                         <h1 className="text-lg md:text-2xl font-bold leading-snug mb-2 text-gray-900 dark:text-white">{product.name}</h1>
-                        <button className="md:hidden text-gray-500"><Heart className="w-6 h-6" /></button>
+
                      </div>
 
                      <div className="flex items-center gap-1 mb-3">
@@ -205,17 +204,7 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
                         <span className="text-sm font-semibold text-green-600 bg-green-100 px-1.5 py-0.5 rounded">Poin</span>
                      </div>
 
-                     <div className="flex items-center gap-3 text-sm text-gray-500 mb-4 border-b md:border-none pb-4 md:pb-0 border-gray-100">
-                        <div className="flex items-center gap-1">
-                           <span className="text-gray-900 dark:text-white">Terjual {soldCount}+</span>
-                        </div>
-                        <span className="text-gray-300">•</span>
-                        <div className="flex items-center gap-1 border border-gray-300 rounded-lg px-2 py-1">
-                           <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                           <span className="text-gray-900 dark:text-white font-bold">{rating}</span>
-                           <span className="text-gray-400">({reviewCount})</span>
-                        </div>
-                     </div>
+
                   </div>
 
                   <div className="hidden md:block hr border-t border-gray-100 dark:border-gray-800" />
@@ -251,24 +240,7 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
 
                   <div className="hidden md:block hr border-t border-gray-100 dark:border-gray-800" />
 
-                  {/* Shop Info Card */}
-                  <div className="flex items-center gap-4 p-3 rounded-lg md:bg-transparent bg-gray-50 dark:bg-gray-800 md:p-0">
-                     <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-xl">
-                        E
-                     </div>
-                     <div>
-                        <p className="font-bold text-sm flex items-center gap-1">
-                           {shopName}
-                           <span className="bg-green-100 text-green-700 text-[10px] px-1 rounded font-bold">Official</span>
-                        </p>
-                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                           <MapPin className="w-3 h-3" /> {shopLocation}
-                        </p>
-                     </div>
-                     <Button variant="outline" size="sm" className="ml-auto font-bold text-green-600 border-green-600 hover:bg-green-50">
-                        Follow
-                     </Button>
-                  </div>
+
                </div>
 
                {/* Right Column: Sticky Action Card (DESKTOP ONLY) */}
@@ -323,17 +295,7 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
                         </Button>
                      </div>
 
-                     <div className="flex items-center justify-center gap-4 pt-2">
-                        <button className="text-xs text-gray-500 flex items-center gap-1 font-semibold hover:text-green-600">
-                           <MessageSquare className="w-4 h-4" /> Chat
-                        </button>
-                        <button className="text-xs text-gray-500 flex items-center gap-1 font-semibold hover:text-green-600">
-                           <Heart className="w-4 h-4" /> Wishlist
-                        </button>
-                        <button className="text-xs text-gray-500 flex items-center gap-1 font-semibold hover:text-green-600">
-                           <Share2 className="w-4 h-4" /> Share
-                        </button>
-                     </div>
+
                   </div>
                </div>
             </div>
@@ -341,9 +303,7 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
 
          {/* MOBILE BOTTOM ACTION BAR (Sticky) */}
          <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 p-3 px-4 flex items-center gap-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-            <button className="p-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
-               <MessageSquare className="w-5 h-5" />
-            </button>
+
             <Button
                variant="outline"
                onClick={handleAddToCart}
@@ -465,6 +425,15 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
                </Button>
             </div>
          </Modal>
+
+         <PurchaseSuccessModal
+            isOpen={successModalOpen}
+            onClose={() => {
+               setSuccessModalOpen(false);
+               router.push('/profile');
+            }}
+            transaction={lastTransaction}
+         />
       </div>
    );
 }

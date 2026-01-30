@@ -48,7 +48,7 @@ export default function ShopPage() {
     <div className="min-h-screen bg-white dark:bg-gray-900 pb-20">
 
       {/* Mobile Sticky Header (Search) */}
-      <div className="md:hidden fixed top-20 left-0 right-0 z-40 bg-white dark:bg-gray-900 px-4 py-3 shadow-sm border-b border-gray-100 dark:border-gray-800">
+      <div className="md:hidden fixed top-16 left-0 right-0 z-40 bg-white dark:bg-gray-900 px-4 py-3 shadow-sm border-b border-gray-100 dark:border-gray-800">
         <div className="flex gap-2 items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />

@@ -4,23 +4,23 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Loader2, Scan, Sparkles, TrendingUp, RefreshCw, X } from 'lucide-react';
+import { Loader2, Scan, Sparkles, TrendingUp, RefreshCw, X, Camera, Zap, CheckCircle2, Gift } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
-import { Html5QrcodeScanner, Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import confetti from 'canvas-confetti';
 
 export default function ScanModal({ open, onClose }) {
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  const [preview, setPreview] = useState(null); // Real-time preview state
-  const [confirming, setConfirming] = useState(false); // Loading state for confirmation
+  const [preview, setPreview] = useState(null);
+  const [confirming, setConfirming] = useState(false);
   const { refreshUser } = useAppContext();
   const router = useRouter();
   const scannerRef = useRef(null);
   const isScannerRunning = useRef(false);
 
-  // Handle body overflow
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
@@ -32,18 +32,15 @@ export default function ScanModal({ open, onClose }) {
     };
   }, [open]);
 
-  // Start Scanner when modal opens and user clicks "Start"
   useEffect(() => {
     let html5QrCode;
 
     if (scanning && open && !result && !isScannerRunning.current) {
       isScannerRunning.current = true;
 
-      // Initialize scanner with a slight delay to ensure DOM is ready
       setTimeout(() => {
         const readerElement = document.getElementById("reader");
         if (!readerElement) {
-          console.warn("Reader element missing, skipping init");
           isScannerRunning.current = false;
           return;
         }
@@ -70,28 +67,21 @@ export default function ScanModal({ open, onClose }) {
             { facingMode: "environment" },
             config,
             (decodedText) => {
-              // Real-time: Show preview first, don't process yet
               handleBarcodeDetected(decodedText);
-
-              // Stop scanning immediately after detection
               html5QrCode.stop().then(() => {
                 scannerRef.current = null;
                 setScanning(false);
                 isScannerRunning.current = false;
-              }).catch(err => console.warn("Failed to stop scanner", err));
+              }).catch(console.warn);
             },
-            (errorMessage) => {
-              // ensure we don't flood logs
-            }
+            () => { }
           ).catch((err) => {
-            console.error("Scanner start error:", err);
             setError("Gagal mengakses kamera. Izinkan akses kamera di browser Anda.");
             setScanning(false);
             isScannerRunning.current = false;
           });
 
         } catch (err) {
-          console.error("Scanner init error:", err);
           setError("Gagal menginisialisasi kamera.");
           setScanning(false);
           isScannerRunning.current = false;
@@ -101,22 +91,18 @@ export default function ScanModal({ open, onClose }) {
 
     return () => {
       if (scannerRef.current) {
-        // Only attempt to stop if it's actually running
         try {
           if (scannerRef.current.isScanning) {
             scannerRef.current.stop().catch(console.warn);
           }
           scannerRef.current.clear().catch(console.warn);
-        } catch (e) {
-          // ignore cleanup errors
-        }
+        } catch (e) { }
         scannerRef.current = null;
         isScannerRunning.current = false;
       }
     };
   }, [scanning, open, result, preview]);
 
-  // Clean up when modal closes
   useEffect(() => {
     if (!open) {
       if (scannerRef.current) {
@@ -132,23 +118,20 @@ export default function ScanModal({ open, onClose }) {
     }
   }, [open]);
 
-  // Real-time barcode detected - fetch preview info
   const handleBarcodeDetected = async (barcode) => {
-    toast.loading("Mendeteksi barcode...");
-
+    toast.loading("Mendeteksi...");
     try {
       const response = await fetch('/api/scan/preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ barcode })
       });
-
       const data = await response.json();
       toast.dismiss();
 
       if (response.ok) {
         setPreview({
-          barcode: barcode,
+          barcode,
           productName: data.productName,
           trashType: data.trashType,
           weight: data.weight,
@@ -165,10 +148,8 @@ export default function ScanModal({ open, onClose }) {
     }
   };
 
-  // Confirm and save the scan
   const handleConfirmScan = async () => {
     if (!preview) return;
-
     setConfirming(true);
     toast.loading("Menyimpan...");
 
@@ -178,7 +159,6 @@ export default function ScanModal({ open, onClose }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ barcode: preview.barcode })
       });
-
       const data = await response.json();
 
       if (response.ok) {
@@ -186,12 +166,24 @@ export default function ScanModal({ open, onClose }) {
           trashType: data.trashType,
           weight: data.weight,
           points: data.pointsEarned,
-          barcode: preview.barcode
+          barcode: preview.barcode,
+          xp: data.xp
         });
         setPreview(null);
-
         toast.dismiss();
-        toast.success(`Berhasil! +${data.pointsEarned} poin`);
+
+        // Trigger confetti for success
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
+        if (data.xp?.leveledUp) {
+          toast.success(`🎉 Level Up! Level ${data.xp.level}: ${data.xp.levelTitle}`, { duration: 5000 });
+          if (data.xp.bonusPoints > 0) {
+            setTimeout(() => toast.success(`🎁 Bonus +${data.xp.bonusPoints} poin!`, { duration: 4000 }), 1500);
+          }
+        } else {
+          toast.success(`+${data.pointsEarned} poin, +${data.xp?.earned || 0} XP`);
+        }
+
         refreshUser();
         router.refresh();
       } else {
@@ -230,281 +222,284 @@ export default function ScanModal({ open, onClose }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
-        onClick={handleClose}
-      />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop with blur */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={handleClose} />
 
-      {/* Custom Modal Content Wrapper with Glassmorphism */}
-      <div className="relative w-full max-w-md bg-white/90 dark:bg-gray-900/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/20 dark:border-gray-700/50 animate-in zoom-in-95 duration-300">
+      {/* Modal Container */}
+      <div className="relative w-full max-w-md animate-in zoom-in-95 fade-in duration-300">
 
-        {/* Header Decoration */}
-        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500"></div>
+        {/* Glow Effect */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 rounded-[2rem] blur-xl opacity-30 animate-pulse" />
 
-        {/* Close Button Override */}
-        <button
-          onClick={handleClose}
-          className="absolute top-4 right-4 z-50 p-2 rounded-full bg-gray-100/50 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-        >
-          <X className="h-5 w-5 text-gray-500" />
-        </button>
+        {/* Main Modal */}
+        <div className="relative bg-[#0a1a1a] rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
 
-        <div className="p-6 md:p-8">
+          {/* Header */}
+          <div className="relative px-6 pt-6 pb-4">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-transparent to-teal-500/10" />
 
-          {/* Title Section */}
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-teal-600 dark:from-green-400 dark:to-teal-400">
-              Scanner
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-              Powered by Py
-            </p>
+            {/* Close Button */}
+            <button
+              onClick={handleClose}
+              className="absolute top-4 right-4 z-10 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
+            >
+              <X className="h-5 w-5 text-gray-400 group-hover:text-white transition-colors" />
+            </button>
+
+            {/* Title */}
+            <div className="relative text-center">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 mb-3">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-xs font-bold text-green-400 uppercase tracking-wider">Scanner Active</span>
+              </div>
+              <h2 className="text-2xl font-black text-white tracking-tight">
+                Scan <span className="text-green-400">Barcode</span>
+              </h2>
+            </div>
           </div>
 
-          {!scanning && !result && !error && !preview && (
-            <div className="text-center py-4">
-              <div className="relative group cursor-pointer" onClick={handleStartScan}>
-                <div className="absolute -inset-1 bg-gradient-to-r from-green-600 to-teal-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-                <div className="relative w-48 h-48 mx-auto mb-8 flex items-center justify-center bg-white dark:bg-gray-800 rounded-full border-4 border-gray-50 dark:border-gray-700 shadow-inner group-hover:scale-105 transition-transform duration-300">
-                  <Scan className="h-24 w-24 text-green-500 group-hover:text-green-600 transition-colors duration-300" />
+          {/* Content Area */}
+          <div className="px-6 pb-6">
 
-                  {/* Pulsing Rings */}
-                  <div className="absolute inset-0 rounded-full border-2 border-green-500/30 animate-ping [animation-duration:3s]"></div>
-                  <div className="absolute inset-4 rounded-full border border-teal-500/20 animate-ping [animation-duration:2s]"></div>
-                </div>
-              </div>
-
-              <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-3">
-                Siap Memindai?
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm px-6 leading-relaxed">
-                Arahkan kamera ke barcode pada kemasan sampah Anda. Sistem kami akan otomatis mengenali jenis dan menghitung poinnya.
-              </p>
-
-              <Button
-                onClick={handleStartScan}
-                size="lg"
-                className="w-full rounded-2xl bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-bold shadow-lg shadow-green-500/30 border-0 h-14 text-base tracking-wide transition-all hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <span className="flex items-center justify-center gap-2">
-                  <Scan className="w-5 h-5" />
-                  Mulai Scanning
-                </span>
-              </Button>
-            </div>
-          )}
-
-          {scanning && (
-            <div className="relative w-full bg-black rounded-3xl overflow-hidden shadow-2xl ring-4 ring-black/5">
-              {/* Scanner Container */}
-              <div id="reader" className="w-full h-[350px] bg-black"></div>
-
-              {/* Custom Overlay */}
-              <div className="absolute inset-0 pointer-events-none z-10">
-                {/* Darkened Borders */}
-                <div className="absolute inset-0 border-[40px] border-black/50"></div>
-
-                {/* Scanning Frame */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 border-2 border-white/30 rounded-lg">
-                  {/* Corners */}
-                  <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-green-500 rounded-tl-lg"></div>
-                  <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-green-500 rounded-tr-lg"></div>
-                  <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-green-500 rounded-bl-lg"></div>
-                  <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-green-500 rounded-br-lg"></div>
-
-                  {/* Scanning Laser */}
-                  <div className="absolute top-0 left-0 w-full h-0.5 bg-red-500 shadow-[0_0_15px_rgba(239,68,68,1)] animate-[scan_2s_ease-in-out_infinite] opacity-80"></div>
-                </div>
-
-                {/* Text Hint */}
-                <div className="absolute bottom-8 left-0 w-full text-center">
-                  <p className="inline-block px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-md text-white/90 text-xs font-medium tracking-wide border border-white/10">
-                    Posisikan barcode di dalam kotak
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Real-time Preview Section */}
-          {preview && !result && !error && (
-            <div className="text-center py-2 animate-in fade-in slide-in-from-bottom-4 duration-300">
-              {/* Preview Icon */}
-              <div className="relative mx-auto w-20 h-20 mb-6">
-                <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-pulse"></div>
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full shadow-lg shadow-blue-500/40">
-                  <Scan className="w-8 h-8 text-white" />
-                </div>
-                <div className="absolute -right-2 -top-2 bg-green-400 text-green-900 text-xs font-bold px-2 py-1 rounded-full shadow-sm border border-green-200 rotate-12">
-                  Terdeteksi!
-                </div>
-              </div>
-
-              <h3 className="text-2xl font-black text-gray-800 dark:text-white mb-1 tracking-tight">
-                Barcode Terdeteksi
-              </h3>
-              <p className="text-gray-400 text-sm mb-6 font-mono bg-gray-100 dark:bg-gray-800/50 inline-block px-3 py-1 rounded-lg">
-                ID: {preview.barcode}
-              </p>
-
-              {/* Preview Card */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/50 rounded-2xl p-1 border border-gray-200 dark:border-gray-700 mb-6 shadow-sm">
-                <div className="bg-white dark:bg-gray-900/80 rounded-xl p-5">
-                  {/* Product Name */}
-                  <div className="mb-4 pb-4 border-b border-gray-100 dark:border-gray-700">
-                    <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Produk</p>
-                    <p className="font-bold text-gray-800 dark:text-gray-100 text-lg">{preview.productName}</p>
-                    <p className="text-xs text-green-600 dark:text-green-400 font-medium">{preview.trashType}</p>
+            {/* Initial State - Start Scan */}
+            {!scanning && !result && !error && !preview && (
+              <div className="text-center py-6">
+                {/* Animated Scanner Icon */}
+                <div className="relative mx-auto w-40 h-40 mb-8">
+                  {/* Outer Ring */}
+                  <div className="absolute inset-0 rounded-full border-2 border-dashed border-green-500/30 animate-[spin_10s_linear_infinite]" />
+                  {/* Middle Ring */}
+                  <div className="absolute inset-4 rounded-full border border-green-500/20" />
+                  {/* Inner Circle */}
+                  <div className="absolute inset-8 rounded-full bg-gradient-to-br from-green-500/20 to-teal-500/20 flex items-center justify-center backdrop-blur-sm border border-green-500/30">
+                    <Camera className="w-12 h-12 text-green-400" />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-6 relative">
-                    {/* Divider */}
-                    <div className="absolute left-1/2 top-2 bottom-2 w-px bg-gray-200 dark:bg-gray-700"></div>
-
-                    <div className="text-center">
-                      <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-2">Berat Estimasi</p>
-                      <p className="font-bold text-blue-600 dark:text-blue-400 text-xl">{preview.weight} <span className="text-sm font-normal text-gray-400">kg</span></p>
-                      <p className="text-xs text-gray-400 mt-1">≈ {Math.round(preview.weight * 1000)}g</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-2">Poin Didapat</p>
-                      <p className="font-bold text-green-600 dark:text-green-400 text-xl">+{preview.points} <span className="text-sm font-normal text-gray-400">XP</span></p>
-                    </div>
-                  </div>
+                  {/* Corner Brackets */}
+                  <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-green-500 rounded-tl-lg" />
+                  <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-green-500 rounded-tr-lg" />
+                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-green-500 rounded-bl-lg" />
+                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-green-500 rounded-br-lg" />
                 </div>
-              </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-3">
+                <h3 className="text-lg font-bold text-white mb-2">
+                  Siap Memindai?
+                </h3>
+                <p className="text-gray-400 text-sm mb-8 leading-relaxed max-w-xs mx-auto">
+                  Arahkan kamera ke barcode pada kemasan sampah plastik Anda
+                </p>
+
                 <Button
-                  onClick={handleReset}
-                  variant="outline"
-                  className="flex-1 rounded-xl h-12 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold"
+                  onClick={handleStartScan}
+                  size="lg"
+                  className="w-full h-14 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold text-base shadow-lg shadow-green-500/25 border-0 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  <RefreshCw className="w-4 h-4 mr-2" /> Scan Ulang
+                  <Camera className="w-5 h-5 mr-2" />
+                  Mulai Scan
                 </Button>
-                <Button
-                  onClick={handleConfirmScan}
-                  disabled={confirming}
-                  className="flex-1 rounded-xl h-12 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-bold shadow-lg shadow-green-500/30 border-0"
-                >
-                  {confirming ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 mr-2" /> Konfirmasi
-                    </>
+
+                {/* Features */}
+                <div className="grid grid-cols-3 gap-3 mt-8">
+                  {[
+                    { icon: Zap, label: 'Instan' },
+                    { icon: Sparkles, label: 'Auto-detect' },
+                    { icon: Gift, label: '+Poin' },
+                  ].map((item, i) => (
+                    <div key={i} className="bg-white/5 rounded-xl py-3 px-2 border border-white/5">
+                      <item.icon className="w-5 h-5 mx-auto text-green-400 mb-1" />
+                      <p className="text-[10px] text-gray-400 font-medium">{item.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Scanning State */}
+            {scanning && (
+              <div className="relative">
+                {/* Scanner Container */}
+                <div className="relative w-full aspect-square bg-black rounded-2xl overflow-hidden border border-white/10">
+                  <div id="reader" className="w-full h-full" />
+
+                  {/* Overlay Frame */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    {/* Corners */}
+                    <div className="absolute top-4 left-4 w-16 h-16 border-t-4 border-l-4 border-green-500 rounded-tl-xl" />
+                    <div className="absolute top-4 right-4 w-16 h-16 border-t-4 border-r-4 border-green-500 rounded-tr-xl" />
+                    <div className="absolute bottom-4 left-4 w-16 h-16 border-b-4 border-l-4 border-green-500 rounded-bl-xl" />
+                    <div className="absolute bottom-4 right-4 w-16 h-16 border-b-4 border-r-4 border-green-500 rounded-br-xl" />
+
+                    {/* Scan Line */}
+                    <div className="absolute left-4 right-4 h-1 bg-gradient-to-r from-transparent via-green-500 to-transparent shadow-[0_0_20px_rgba(34,197,94,0.8)] animate-[scanLine_2s_ease-in-out_infinite]" />
+                  </div>
+                </div>
+
+                {/* Hint Text */}
+                <div className="mt-4 text-center">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20">
+                    <Loader2 className="w-4 h-4 text-green-400 animate-spin" />
+                    <span className="text-sm text-green-400 font-medium">Mencari barcode...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Preview State */}
+            {preview && !result && !error && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                {/* Detected Badge */}
+                <div className="text-center">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/20 border border-blue-500/30">
+                    <CheckCircle2 className="w-4 h-4 text-blue-400" />
+                    <span className="text-sm text-blue-400 font-bold">Barcode Terdeteksi</span>
+                  </div>
+                </div>
+
+                {/* Product Card */}
+                <div className="bg-white/5 rounded-2xl p-5 border border-white/10">
+                  <p className="text-xs text-gray-500 font-medium mb-1">Produk</p>
+                  <h4 className="text-xl font-bold text-white mb-1">{preview.productName}</h4>
+                  <span className="inline-block px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-bold">
+                    {preview.trashType}
+                  </span>
+
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-2 gap-4 mt-5">
+                    <div className="bg-black/30 rounded-xl p-4 text-center border border-white/5">
+                      <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Berat</p>
+                      <p className="text-2xl font-black text-blue-400">{preview.weight}<span className="text-sm font-normal text-gray-500 ml-1">kg</span></p>
+                    </div>
+                    <div className="bg-black/30 rounded-xl p-4 text-center border border-white/5">
+                      <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1">Poin</p>
+                      <p className="text-2xl font-black text-green-400">+{preview.points}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    onClick={handleReset}
+                    variant="outline"
+                    className="h-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-white font-semibold"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" /> Ulang
+                  </Button>
+                  <Button
+                    onClick={handleConfirmScan}
+                    disabled={confirming}
+                    className="h-12 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold shadow-lg shadow-green-500/25"
+                  >
+                    {confirming ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Sparkles className="w-4 h-4 mr-2" /> Konfirmasi</>}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Result State */}
+            {result && (
+              <div className="text-center space-y-5 animate-in fade-in zoom-in-95 duration-500">
+                {/* Success Icon */}
+                <div className="relative mx-auto w-24 h-24">
+                  <div className="absolute inset-0 bg-green-500/20 rounded-full animate-ping" style={{ animationDuration: '2s' }} />
+                  <div className="relative w-full h-full rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-500/30">
+                    <CheckCircle2 className="w-12 h-12 text-white" />
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-2xl font-black text-white mb-1">Berhasil!</h3>
+                  <p className="text-gray-400 text-sm">Sampah berhasil didaftarkan</p>
+                </div>
+
+                {/* Result Card */}
+                <div className="bg-white/5 rounded-2xl p-5 border border-white/10 text-left">
+                  <div className="flex justify-between items-center mb-4 pb-4 border-b border-white/10">
+                    <span className="text-gray-400 text-sm">Jenis</span>
+                    <span className="font-bold text-white">{result.trashType}</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-4 pb-4 border-b border-white/10">
+                    <span className="text-gray-400 text-sm">Berat</span>
+                    <span className="font-bold text-blue-400">{result.weight} kg</span>
+                  </div>
+
+                  {/* Rewards Grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-green-500/10 rounded-xl p-3 text-center border border-green-500/20">
+                      <p className="text-[10px] text-green-400/70 font-bold mb-1">POIN</p>
+                      <p className="text-xl font-black text-green-400">+{result.points}</p>
+                    </div>
+                    <div className="bg-purple-500/10 rounded-xl p-3 text-center border border-purple-500/20">
+                      <p className="text-[10px] text-purple-400/70 font-bold mb-1">XP</p>
+                      <p className="text-xl font-black text-purple-400">+{result.xp?.earned || 0}</p>
+                    </div>
+                  </div>
+
+                  {/* Level Info */}
+                  {result.xp && (
+                    <div className="mt-4 pt-4 border-t border-white/10 text-center">
+                      <p className="text-xs text-gray-500">Level {result.xp.level}</p>
+                      <p className="font-bold text-white">{result.xp.levelTitle}</p>
+                      {result.xp.leveledUp && (
+                        <div className="mt-2 inline-flex items-center gap-1 px-3 py-1 rounded-full bg-yellow-500/20 border border-yellow-500/30">
+                          <TrendingUp className="w-3 h-3 text-yellow-400" />
+                          <span className="text-xs font-bold text-yellow-400">Level Up! +{result.xp.bonusPoints} bonus</span>
+                        </div>
+                      )}
+                    </div>
                   )}
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {result && (
-            <div className="text-center py-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {/* Success Animation */}
-              <div className="relative mx-auto w-24 h-24 mb-6">
-                <div className="absolute inset-0 bg-green-500/20 rounded-full animate-pulse"></div>
-                <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-full">
-                  <DotLottieReact
-                    src="https://lottie.host/11606d62-e0bb-4042-92dc-2a14728f9f83/dKfFgJCahi.lottie"
-                    autoplay
-                    style={{ width: '150%', height: '150%' }}
-                  />
                 </div>
-                <div className="absolute -right-2 -top-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full shadow-sm border border-yellow-200 rotate-12">
-                  +Points!
+
+                {/* Buttons */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    onClick={handleReset}
+                    variant="outline"
+                    className="h-12 rounded-xl bg-white/5 border-white/10 hover:bg-white/10 text-white font-semibold"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" /> Scan Lagi
+                  </Button>
+                  <Button
+                    onClick={handleClose}
+                    className="h-12 rounded-xl bg-white text-gray-900 hover:bg-gray-100 font-bold"
+                  >
+                    Selesai
+                  </Button>
                 </div>
               </div>
+            )}
 
-              <h3 className="text-3xl font-black text-gray-800 dark:text-white mb-1 tracking-tight">
-                Scan Berhasil!
-              </h3>
-              <p className="text-gray-400 text-sm mb-8 font-mono bg-gray-100 dark:bg-gray-800/50 inline-block px-3 py-1 rounded-lg">
-                ID: {result.barcode}
-              </p>
-
-              {/* Result Card */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/50 rounded-2xl p-1 border border-gray-200 dark:border-gray-700 mb-8 shadow-sm">
-                <div className="bg-white dark:bg-gray-900/80 rounded-xl p-5">
-                  <div className="grid grid-cols-2 gap-8 relative">
-                    {/* Divider */}
-                    <div className="absolute left-1/2 top-2 bottom-2 w-px bg-gray-200 dark:bg-gray-700"></div>
-
-                    <div className="text-center">
-                      <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-2">Jenis Sampah</p>
-                      <p className="font-bold text-gray-800 dark:text-gray-100 text-lg leading-tight">{result.trashType}</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-2">Berat Terdeteksi</p>
-                      <p className="font-bold text-blue-600 dark:text-blue-400 text-lg">{result.weight} <span className="text-sm font-normal text-gray-400">kg</span></p>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 pt-6 border-t border-dashed border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-500 font-medium">Reward Didapat</span>
-                      <div className="flex items-center gap-1 text-yellow-500">
-                        <TrendingUp className="w-4 h-4" />
-                        <span className="text-xs font-bold">Level Up!</span>
-                      </div>
-                    </div>
-                    <div className="flex items-baseline justify-center gap-1 bg-green-50 dark:bg-green-900/20 py-3 rounded-xl border border-green-100 dark:border-green-900/50">
-                      <span className="text-4xl font-black text-green-600 dark:text-green-400 tracking-tighter">+{result.points}</span>
-                      <span className="text-sm font-bold text-green-600/70 dark:text-green-400/70">XP</span>
-                    </div>
-                  </div>
+            {/* Error State */}
+            {error && (
+              <div className="text-center py-6 animate-in fade-in duration-300">
+                <div className="w-20 h-20 mx-auto bg-red-500/20 rounded-full flex items-center justify-center mb-4 border border-red-500/30">
+                  <X className="w-10 h-10 text-red-400" />
                 </div>
-              </div>
-
-              <div className="flex gap-3">
+                <h3 className="text-xl font-bold text-white mb-2">Gagal Mengenali</h3>
+                <p className="text-gray-400 text-sm mb-6 max-w-xs mx-auto">
+                  {error}. Pastikan barcode terlihat jelas.
+                </p>
                 <Button
                   onClick={handleReset}
-                  variant="outline"
-                  className="flex-1 rounded-xl h-12 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 font-semibold"
+                  className="h-12 px-8 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold"
                 >
-                  <RefreshCw className="w-4 h-4 mr-2" /> Scan Lagi
-                </Button>
-                <Button
-                  onClick={handleClose}
-                  className="flex-1 rounded-xl h-12 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-200 text-white dark:text-gray-900 font-bold shadow-lg shadow-gray-200 dark:shadow-none"
-                >
-                  Selesai
+                  Coba Lagi
                 </Button>
               </div>
-            </div>
-          )}
+            )}
 
-          {error && (
-            <div className="text-center py-8 animate-in zoom-in duration-300">
-              <div className="w-20 h-20 mx-auto bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
-                <span className="text-4xl">🤔</span>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Hmm, Gagal Mengenali</h3>
-              <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm px-8">
-                {error}. Pastikan pencahayaan cukup dan barcode terlihat jelas.
-              </p>
-              <Button
-                onClick={handleReset}
-                className="min-w-[140px] rounded-xl h-12 bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg shadow-red-200 dark:shadow-none"
-              >
-                Coba Lagi
-              </Button>
-            </div>
-          )}
-
+          </div>
         </div>
       </div>
 
-      {/* Global Style for Scan Animation */}
+      {/* Scan Line Animation */}
       <style jsx global>{`
-        @keyframes scan {
-          0%, 100% { top: 0%; opacity: 0; }
+        @keyframes scanLine {
+          0%, 100% { top: 10%; opacity: 0; }
           10% { opacity: 1; }
           90% { opacity: 1; }
-          50% { top: 100%; }
+          50% { top: 90%; }
         }
       `}</style>
     </div>
