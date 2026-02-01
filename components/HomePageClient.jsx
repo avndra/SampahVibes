@@ -11,8 +11,14 @@ import ProductCard from '@/components/ProductCard';
 import ProgressChart from '@/components/ProgressChart';
 import ScanButton from '@/components/ScanButton';
 import HeroCarousel from '@/components/HeroCarousel';
-import { TreePine, ChevronRight, Leaf, Wind, Droplets, ArrowRight } from 'lucide-react';
+import { TreePine, ChevronRight, Leaf, Wind, Droplets, ArrowRight, ScanLine, Coins, Gift, Sparkles, History, Bell } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+// ... (skip lines)
+<Link href="/notifications" className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative">
+  <div className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-gray-800"></div>
+  <Bell className="w-5 h-5" />
+</Link>
 
 // --- Components ---
 
@@ -146,32 +152,27 @@ function EnvironmentalImpact({ totalWeight }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-2">
         {stats.map((stat, idx) => (
-          <div key={idx} className={`relative overflow-hidden rounded-2xl p-4 ${stat.bg} border ${stat.border} transition-all hover:-translate-y-1 hover:shadow-lg duration-300 group`}>
-            <div className="flex items-start justify-between mb-3">
-              <div className="p-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm group-hover:scale-110 transition-transform">
-                {stat.icon}
+          <div key={idx} className={`relative overflow-hidden rounded-xl p-2.5 ${stat.bg} border ${stat.border} transition-all hover:bg-opacity-80 group`}>
+            <div className="flex flex-col items-center text-center">
+              <div className="p-1.5 bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-1.5">
+                {/* Clone element to modify className for size */}
+                {React.cloneElement(stat.icon, { className: `w-4 h-4 ${stat.icon.props.className.split(' ').slice(2).join(' ')}` })}
               </div>
-              <div className={`text-[10px] font-bold px-2 py-1 rounded-lg bg-white/60 dark:bg-black/20 text-gray-600 backdrop-blur-sm`}>
-                Total
+
+              <div className="relative z-10 w-full">
+                <div className="flex flex-col items-center">
+                  <span className={`text-sm font-black bg-clip-text text-transparent bg-gradient-to-r ${stat.color} leading-none`}>
+                    {stat.value}
+                  </span>
+                  <span className="text-[9px] font-bold text-gray-500 mt-0.5">{stat.unit}</span>
+                </div>
+                <p className="text-[9px] font-medium text-gray-600 dark:text-gray-400 mt-0.5 truncate w-full">
+                  {stat.label}
+                </p>
               </div>
             </div>
-
-            <div className="relative z-10">
-              <div className="flex items-baseline gap-1">
-                <span className={`text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r ${stat.color}`}>
-                  {stat.value}
-                </span>
-                <span className="text-xs font-bold text-gray-500">{stat.unit}</span>
-              </div>
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mt-1">
-                {stat.label}
-              </p>
-            </div>
-
-            {/* Decorative Background Blob */}
-            <div className={`absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-gradient-to-r ${stat.color} opacity-10 blur-2xl group-hover:opacity-20 transition-opacity`}></div>
           </div>
         ))}
       </div>
@@ -214,13 +215,189 @@ function FeaturedProducts({ products }) {
   );
 }
 
+// How It Works Section for Landing Page
+function HowItWorks() {
+  const steps = [
+    {
+      step: 1,
+      icon: ScanLine,
+      title: 'Scan Sampahmu',
+      description: 'Arahkan kamera ke barcode botol plastik atau sampah elektronik. Sistem akan mendeteksi jenis dan berat otomatis.',
+      color: 'from-blue-500 to-cyan-500',
+      bgColor: 'bg-blue-500/10',
+    },
+    {
+      step: 2,
+      icon: Coins,
+      title: 'Dapatkan Poin & XP',
+      description: 'Setiap gram sampah yang kamu recycle akan dikonversi menjadi poin reward dan XP untuk naik level.',
+      color: 'from-yellow-500 to-orange-500',
+      bgColor: 'bg-yellow-500/10',
+    },
+    {
+      step: 3,
+      icon: Gift,
+      title: 'Tukar dengan Hadiah',
+      description: 'Kumpulkan poin dan tukarkan dengan produk ramah lingkungan, voucher, atau merchandise eksklusif.',
+      color: 'from-pink-500 to-rose-500',
+      bgColor: 'bg-pink-500/10',
+    },
+  ];
+
+  return (
+    <div className="py-20">
+      <div className="text-center mb-16">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-transparent text-transparent text-sm font-bold mb-4">
+        </div>
+        <h2 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white mb-4">
+          Semudah <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-teal-500">1-2-3</span>
+        </h2>
+        <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto text-lg">
+          Tidak perlu ribet. Cukup tiga langkah sederhana untuk mulai berkontribusi menjaga bumi.
+        </p>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-8 relative">
+        {/* Connecting Line (Desktop) */}
+        <div className="hidden md:block absolute top-24 left-[16.6%] right-[16.6%] h-1 bg-gradient-to-r from-blue-500 via-yellow-500 to-pink-500 rounded-full opacity-20" />
+
+        {steps.map((item, index) => (
+          <div key={index} className="relative group">
+            {/* Step Number Badge */}
+            <div className={`absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-r ${item.color} text-white font-black text-sm flex items-center justify-center shadow-lg z-10`}>
+              {item.step}
+            </div>
+
+            <div className={`${item.bgColor} backdrop-blur-sm border border-white/10 rounded-3xl p-8 pt-10 text-center hover:scale-105 transition-all duration-500 group-hover:shadow-2xl`}>
+              {/* Icon */}
+              <div className={`w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300`}>
+                <item.icon className="w-10 h-10 text-white" />
+              </div>
+
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                {item.title}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                {item.description}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Animated Product Slider for Guest Landing Page
+function ProductSlider({ products }) {
+  const [isPaused, setIsPaused] = useState(false);
+
+  if (products.length === 0) return null;
+
+  // Duplicate products for infinite scroll effect
+  const duplicatedProducts = [...products, ...products];
+
+  return (
+    <div className="py-20">
+      <div className="text-center mb-12">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-transparent text-purple-500 text-sm font-bold mb-4">
+        </div>
+        <h2 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white mb-4">
+          Tukar Poin dengan <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">Hadiah Menarik</span>
+        </h2>
+        <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto text-lg">
+          Dari tumbler premium hingga voucher belanja. Pilihan rewards yang bikin semangat daur ulang!
+        </p>
+      </div>
+
+      {/* Slider Container */}
+      <div className="relative overflow-hidden">
+        {/* Gradient Fade Left */}
+        <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-gray-50 dark:from-gray-950 to-transparent z-10 pointer-events-none" />
+        {/* Gradient Fade Right */}
+        <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-gray-50 dark:from-gray-950 to-transparent z-10 pointer-events-none" />
+
+        <div
+          className="flex gap-6 py-4 animate-scroll"
+          style={{
+            width: 'max-content',
+          }}
+        >
+          {duplicatedProducts.map((product, index) => (
+            <div
+              key={`${product._id}-${index}`}
+              className="flex-shrink-0 w-64 group"
+            >
+              <div className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-lg hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-2">
+                {/* Product Image */}
+                <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
+                  <Image
+                    src={product.image || '/images/placeholder.png'}
+                    alt={product.name}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    unoptimized
+                  />
+                  {/* Points Badge */}
+                  <div className="absolute top-3 right-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg">
+                    {product.pointsCost?.toLocaleString()} pts
+                  </div>
+                </div>
+
+                {/* Product Info */}
+                <div className="p-5">
+                  <h3 className="font-bold text-gray-900 dark:text-white mb-1 truncate">
+                    {product.name}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+                    {product.description || 'Produk ramah lingkungan'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA Button */}
+      <div className="text-center mt-10">
+        <Link href="/shop">
+          <Button
+            variant="contained"
+            size="large"
+            sx={{
+              borderRadius: '16px',
+              textTransform: 'none',
+              background: 'linear-gradient(135deg, #9333ea 0%, #ec4899 100%)',
+              fontSize: '1rem',
+              fontWeight: '700',
+              padding: '14px 40px',
+              boxShadow: '0 10px 30px rgba(147, 51, 234, 0.3)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #7e22ce 0%, #db2777 100%)',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 15px 40px rgba(147, 51, 234, 0.4)',
+              },
+            }}
+          >
+            Lihat Semua Hadiah
+            <ArrowRight className="ml-2 w-5 h-5" />
+          </Button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 import OnboardingGuide from '@/components/OnboardingGuide';
+
+import QuickActions from '@/components/QuickActions';
 
 // --- Main HomePageClient Component ---
 
 export default function HomePageClient({ session, user, featuredProducts, recentActivities }) {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-20 overflow-x-hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-24 md:pb-12 overflow-x-hidden font-sans">
 
       {/* Onboarding Guide for New Users */}
       {session && user && (
@@ -237,11 +414,11 @@ export default function HomePageClient({ session, user, featuredProducts, recent
         <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blue-400/20 blur-[100px] animate-pulse [animation-delay:2s]"></div>
       </div>
 
-      <div className="relative z-10">
+      <div className="relative z-10 max-w-md mx-auto md:max-w-7xl">
         {/* Hero for Guests Only */}
         {!session && (
           <div className="relative min-h-[95vh] flex items-center overflow-hidden">
-            {/* Hero Background */}
+            {/* ... Guest content unchanged ... */}
             <div className="absolute inset-0 z-0">
               <Image
                 src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2070"
@@ -251,16 +428,12 @@ export default function HomePageClient({ session, user, featuredProducts, recent
                 unoptimized
                 priority
               />
-              {/* Dark overlay without white fade */}
               <div className="absolute inset-0 bg-black/60 dark:bg-black/70"></div>
-              {/* Optional: Radial gradient for focus */}
               <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent"></div>
             </div>
 
             <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
               <div className="grid md:grid-cols-2 gap-12 items-center">
-
-                {/* Text Content - Left Aligned */}
                 <div className="text-left animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-2xl">
                   <div className="inline-flex items-center gap-2 py-2 px-4 rounded-full bg-green-500/20 backdrop-blur-md border border-green-500/30 text-green-300 text-sm font-bold tracking-wider mb-6 hover:bg-green-500/30 transition-colors">
                     <span className="relative flex h-2 w-2">
@@ -304,7 +477,6 @@ export default function HomePageClient({ session, user, featuredProducts, recent
                       </Button>
                     </Link>
                   </div>
-
                   {/* Trust Indicators */}
                   <div className="mt-12 flex items-center gap-6 text-gray-400 text-sm font-medium">
                     <div className="flex -space-x-3">
@@ -317,146 +489,84 @@ export default function HomePageClient({ session, user, featuredProducts, recent
                     <span>Dipercaya 1000+ Pengguna</span>
                   </div>
                 </div>
-
-                {/* Right Side - Floating Cards / Visuals */}
-                <div className="hidden md:block relative h-full min-h-[500px] animate-in fade-in slide-in-from-right-8 duration-1000 delay-200">
-                  {/* Abstract Floating UI Elements representing the app */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-green-500/30 rounded-full blur-[100px] animate-pulse"></div>
-
-                  <div className="relative z-10 grid gap-6">
-                    <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-3xl transform rotate-[-6deg] hover:rotate-0 transition-transform duration-500 hover:scale-105 shadow-2xl">
-                      <div className="flex items-center gap-4 mb-3">
-                        <div className="p-2 bg-green-500/20 rounded-2xl w-12 h-12 flex items-center justify-center">📸
-                        </div>
-                        <div>
-                          <p className="text-white font-bold">Scanner</p>
-                          <p className="text-green-300 text-xs">Mendeteksi Sampah...</p>
-                        </div>
-                      </div>
-                      <div className="h-2 bg-white/20 rounded-full overflow-hidden">
-                        <div className="h-full w-[85%] bg-green-500 rounded-full animate-[loading_2s_ease-in-out_infinite]"></div>
-                      </div>
-                    </div>
-
-                    <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-3xl transform rotate-[6deg] translate-x-12 hover:rotate-0 hover:translate-x-0 transition-all duration-500 hover:scale-105 shadow-2xl">
-                      <div className="flex justify-between items-center mb-2">
-                        <p className="text-gray-300 text-sm">Total Poin</p>
-                        <span className="text-green-400 text-xs font-bold">+250</span>
-                      </div>
-                      <p className="text-3xl font-black text-white">12,450 <span className="text-sm font-normal text-gray-400">Pts</span></p>
-                    </div>
-                  </div>
-                </div>
-
               </div>
             </div>
           </div>
         )}
 
-        {/* Hero for Logged-in Users */}
-        {session && user && (
-          <HeroCarousel />
-        )}
-
         {/* Main Content Container */}
-        <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative ${!session ? '-mt-20' : ''}`}>
+        <div className={`px-4 sm:px-6 lg:px-8 relative ${!session ? '-mt-20' : 'pt-6'}`}>
 
           {session && user && (
-            <div className="space-y-8 md:space-y-16">
+            <div className="space-y-6">
 
-              {/* Greeting Section */}
-              <div className="flex flex-col md:flex-row justify-between items-end gap-4 mb-2">
+              {/* 0. Promo Banner (HeroCarousel) - Full Width on Mobile */}
+              <div className="w-full overflow-hidden rounded-none md:rounded-3xl shadow-lg -mx-4 md:mx-0 w-[calc(100%+2rem)] md:w-full">
+                <HeroCarousel />
+              </div>
+
+              {/* 1. Mobile App Header Style */}
+              <div className="flex justify-between items-center mb-2">
                 <div>
-                  <h1 className="text-3xl md:text-4xl font-black text-gray-800 dark:text-white">
-                    Halo, <span className="text-green-600 dark:text-green-400">{user.name?.split(' ')[0] || 'Sobat'}!</span> <img src="https://emojis.slackmojis.com/emojis/images/1577305505/7373/hand_wave.gif?1577305505" alt="wave" className="inline w-10 h-10" />
+                  <h1 className="text-lg font-bold text-gray-800 dark:text-white">
+                    Halo, {user.name?.split(' ')[0]}! 👋
                   </h1>
-                  <p className="text-gray-600 dark:text-gray-400 mt-1">
-                    Terima kasih telah berkontribusi menjaga kelestarian alam hari ini.
-                  </p>
                 </div>
-                <div className="text-right hidden md:block">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Hari ini</p>
-                  <p className="text-xl font-bold text-gray-800 dark:text-white">
-                    {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                  </p>
-                </div>
-              </div>
-
-              {/* Unified Stats Card */}
-              <DashboardStats user={user} />
-
-              {/* Flex container for Chart & Impact */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Chart - Takes up 2 columns */}
-                <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-3xl p-6 md:p-8 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-800">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-white">Statistik Poin</h3>
-                  </div>
-                  <ProgressChart monthlyPoints={user.monthlyPoints || {}} />
-                  <EnvironmentalImpact totalWeight={user.totalWeight || 0} />
-                </div>
-
-                {/* Activity Feed - Takes up 1 column */}
-                <div className="lg:col-span-1 h-full">
-                  <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-gray-800 h-full flex flex-col">
-                    <div className="flex justify-between items-center mb-4 flex-shrink-0">
-                      <h3 className="text-lg font-bold text-gray-800 dark:text-white">Baru Saja</h3>
-                      <Link href="/profile" className="text-xs font-bold text-green-600 hover:underline">Lihat Semua</Link>
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                      <ActivityFeed activities={recentActivities.slice(0, 5)} compact className="h-full" />
-                    </div>
-                  </div>
+                {/* Header Buttons */}
+                <div className="flex items-center gap-3">
+                  <Link href="/history" className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <History className="w-5 h-5" />
+                  </Link>
+                  <Link href="/notifications" className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative">
+                    <div className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-gray-800"></div>
+                    {/* Note: In a real app, red dot would be conditional based on unread count */}
+                    <Bell className="w-5 h-5" />
+                  </Link>
                 </div>
               </div>
 
-              {/* Featured Products */}
-              <FeaturedProducts products={featuredProducts} />
+              {/* 2. Hero Card (DashboardStats) */}
+              <div className="w-full">
+                <DashboardStats user={user} />
+              </div>
 
-              {/* About Section */}
-              <AboutSection />
+              {/* 3. Quick Actions Grid */}
+              <div className="bg-white dark:bg-gray-900 rounded-3xl p-2 shadow-sm border border-gray-100 dark:border-gray-800">
+                <QuickActions />
+              </div>
+
+              {/* 4. Impact & Charts (Stacked) */}
+              <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">Statistik Poin</h3>
+                <ProgressChart monthlyPoints={user.monthlyPoints || {}} />
+                <EnvironmentalImpact totalWeight={user.totalWeight || 0} />
+              </div>
+
+              {/* 5. Recent Activity - Hidden on Mobile, Visible on Desktop */}
+              <div className="hidden md:block bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-bold text-gray-800 dark:text-white">Aktivitas Terbaru</h3>
+                  <Link href="/history" className="text-xs font-bold text-green-600 hover:underline">Lihat Semua</Link>
+                </div>
+                <ActivityFeed activities={recentActivities.slice(0, 5)} compact />
+              </div>
+
+              {/* 6. Featured Products */}
+              <div className="pt-2">
+                <FeaturedProducts products={featuredProducts} />
+              </div>
 
             </div>
           )}
 
           {/* Guest View Content */}
           {(!session || !user) && (
-            <div className="space-y-20 pb-20">
-              {/* Features Grid */}
-              <div className="grid md:grid-cols-3 gap-8 mt-20">
-                {[
-                  { title: "Scan & Kenali", desc: "Teknologi kami mengenali jenis sampahmu dalam hitungan detik.", icon: "lottie", lottieUrl: "https://lottie.host/cd30d12c-4007-40bb-bc07-f05815afba08/IycDB7L0Or.lottie" },
-                  { title: "Kumpulkan Poin", desc: "Dapatkan poin reward untuk setiap gram sampah.", icon: "💰" },
-                  { title: "Tukar Hadiah", desc: "Tukarkan poin dengan voucher, pulsa, atau barang.", icon: "🎁" }
-                ].map((feature, i) => (
-                  <div key={i} className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 text-center hover:-translate-y-2 transition-transform duration-300">
-                    <div className="w-20 h-20 mx-auto bg-green-50 dark:bg-green-900/30 rounded-2xl flex items-center justify-center text-4xl mb-6 overflow-hidden">
-                      {feature.icon === "lottie" ? (
-                        <DotLottieReact
-                          src={feature.lottieUrl}
-                          loop
-                          autoplay
-                          style={{ width: '100%', height: '100%' }}
-                        />
-                      ) : (
-                        feature.icon
-                      )}
-                    </div>
-                    <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">{feature.title}</h3>
-                    <p className="text-gray-500 dark:text-gray-400 leading-relaxed">{feature.desc}</p>
-                  </div>
-                ))}
-              </div>
-
-              <FeaturedProducts products={featuredProducts} />
+            <div className="space-y-0 pb-20">
+              <HowItWorks />
+              <ProductSlider products={featuredProducts} />
               <AboutSection />
             </div>
           )}
-        </div>
-
-        {/* Only show float scan button on desktop since mobile has it in navbar */}
-        <div className="hidden md:block">
-          {session && <ScanButton />}
         </div>
       </div>
     </div>

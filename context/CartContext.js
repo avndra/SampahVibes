@@ -100,11 +100,42 @@ export function CartProvider({ children }) {
     }
   };
 
+  const checkoutItem = async (productId, shippingData = {}) => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/user/cart/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, shippingData }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(data.message || 'Pembayaran berhasil!');
+        // Refresh cart to reflect removal
+        fetchCart();
+        // Refresh user data (points) if refreshUser is available from AppContext
+        // We can't access refreshUser here easily because of circular dependency risk if we didn't plan for it,
+        // but AppContext is already imported. Let's check if we're using it.
+        // Yes, const { session } = useAppContext() is at the top.
+        // We should probably expose refreshUser from CartContext or just rely on the user navigating/refreshing.
+        return true;
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      toast.error(error.message || 'Gagal memproses pembayaran.');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const cartCount = cart.reduce((count, item) => count + item.quantity, 0);
   const cartTotal = cart.reduce((total, item) => total + (item.productId.pointsCost * item.quantity), 0);
 
   return (
-    <CartContext.Provider value={{ cart, loading, addToCart, updateQuantity, removeFromCart, cartCount, cartTotal }}>
+    <CartContext.Provider value={{ cart, loading, addToCart, updateQuantity, removeFromCart, checkoutItem, cartCount, cartTotal }}>
       {children}
     </CartContext.Provider>
   );

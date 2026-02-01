@@ -32,40 +32,46 @@ export default function DashboardStats({ user: initialUser }) {
       value: user.totalPoints.toLocaleString(),
       icon: 'points_earned',
       unit: 'pts',
-      color: 'text-yellow-400',
-      bgIcon: 'bg-yellow-400/20'
+      color: 'text-white',
+      bgIcon: 'bg-yellow-500'
     },
     {
       title: 'Total Berat',
       value: user.totalWeight.toFixed(1),
       icon: 'metal',
       unit: 'kg',
-      color: 'text-blue-400',
-      bgIcon: 'bg-blue-400/20'
+      color: 'text-white',
+      bgIcon: 'bg-blue-500'
     },
     {
       title: 'Total Pindai',
       value: user.totalDeposits,
       icon: 'scan',
       unit: 'x',
-      color: 'text-green-400',
-      bgIcon: 'bg-green-400/20'
+      color: 'text-white',
+      bgIcon: 'bg-green-500'
     },
     {
       title: 'Bulan Ini',
       value: currentMonthPoints.toLocaleString(),
       icon: 'points_earned',
       unit: 'pts',
-      color: 'text-purple-400',
-      bgIcon: 'bg-purple-400/20'
+      color: 'text-white',
+      bgIcon: 'bg-purple-500'
     }
   ];
 
   return (
-    <div className="bg-[#0a1f1f] rounded-[2rem] p-5 md:p-8 shadow-xl relative overflow-hidden border border-white/5 group w-full">
-
-      {/* Decorative Background Elements */}
-      <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 bg-green-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-green-500/20 transition-all duration-700" />
+    <div
+      className="rounded-[2rem] p-5 md:p-8 shadow-xl relative overflow-hidden border border-white/5 group w-full bg-[#0a1f1f]"
+    >
+      {/* Blured Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center blur-[2px] scale-105"
+        style={{ backgroundImage: "url('/ui/profilecardBG1.png')" }}
+      />
+      {/* Overlay to ensure text readability if needed, keeping it minimal or removing if image is dark enough */}
+      {/* <div className="absolute inset-0 bg-black/20" /> */}
 
       <div className="relative z-10 flex flex-col gap-5">
 
@@ -117,7 +123,7 @@ export default function DashboardStats({ user: initialUser }) {
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/5 rounded-xl p-3 transition-all duration-300"
+              className="bg-green-500/10 hover:bg-green-500/20 backdrop-blur-sm border border-white/5 rounded-xl p-3 transition-all duration-300"
             >
               <div className="flex items-start justify-between mb-2">
                 <div className={`p-1.5 rounded-md ${stat.bgIcon}`}>
@@ -125,7 +131,7 @@ export default function DashboardStats({ user: initialUser }) {
                 </div>
               </div>
               <div>
-                <p className="text-gray-400 text-[9px] md:text-[10px] font-bold uppercase tracking-wider mb-0.5 truncate">
+                <p className="text-white text-[9px] md:text-[10px] font-bold uppercase tracking-wider mb-0.5 truncate">
                   {stat.title}
                 </p>
                 <div className="flex items-baseline gap-1">

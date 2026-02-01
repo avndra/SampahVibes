@@ -104,10 +104,12 @@ export default function ProfileClient({ user, activities }) {
                <div className="lg:col-span-3 space-y-6">
 
                   {/* 1. HERO PROFILE CARD */}
-                  <div className="relative overflow-hidden rounded-[2.5rem] bg-[#0a1f1f] text-white shadow-xl p-8">
-                     {/* Background Pattern */}
-                     <div className="absolute top-0 right-0 w-96 h-96 bg-green-500/10 rounded-full blur-3xl -mr-32 -mt-32" />
-                     <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl -ml-24 -mb-24" />
+                  <div
+                     className="relative overflow-hidden rounded-[2.5rem] text-white shadow-xl p-8 bg-cover bg-center"
+                     style={{ backgroundImage: "url('/ui/profilecardBG2.png')" }}
+                  >
+                     {/* Overlay for readability */}
+                     <div className="absolute inset-0 bg-black/40" />
 
                      <div className="relative z-10">
                         <div className="flex flex-col md:flex-row gap-8 items-start">

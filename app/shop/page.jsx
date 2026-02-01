@@ -60,12 +60,7 @@ export default function ShopPage() {
               className="w-full pl-9 pr-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
             />
           </div>
-          <button className="p-2 text-gray-500">
-            <Filter className="w-5 h-5" />
-          </button>
-          <button className="p-2 text-gray-500">
-            <SlidersHorizontal className="w-5 h-5" />
-          </button>
+
         </div>
         {/* Mobile Quick Filters (Horizontal Scroll) */}
         <div className="flex gap-2 overflow-x-auto mt-3 pb-1 no-scrollbar relative z-10">
@@ -83,15 +78,7 @@ export default function ShopPage() {
           ))}
         </div>
 
-        {/* Mobile Hanging Decoration */}
-        <div className="absolute -bottom-24 -right-2 w-24 h-24 pointer-events-none z-0 opactiy-90">
-          <DotLottieReact
-            src="https://lottie.host/e11faadc-56a9-424d-ac71-107cf2894413/jF8P7UrKUD.lottie"
-            loop
-            autoplay
-            style={{ width: '100%', height: '100%' }}
-          />
-        </div>
+
       </div>
 
       <div className="container mx-auto px-4 md:pt-4 pt-[120px]"> {/* Added padding-top for mobile sticky header offset */}
@@ -105,12 +92,12 @@ export default function ShopPage() {
               alt="Hero Banner"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 z-20 flex items-center px-8 md:px-16">
+            <div className="absolute inset-0 z-20 flex items-center px-4 md:px-16">
               <div className="max-w-2xl text-white">
-                <h1 className="text-2xl md:text-4xl font-extrabold mb-2 drop-shadow-md">
-                  Tukarkan Sampahmu,<br />Dapatkan Hadiah Impian!
+                <h1 className="text-lg md:text-4xl font-extrabold mb-1 md:mb-2 drop-shadow-md leading-tight">
+                  Tukarkan Sampahmu,<br className="hidden md:block" /> Dapatkan Hadiah Impian!
                 </h1>
-                <p className="text-sm md:text-lg font-medium text-green-50 opacity-90 mb-6 max-w-lg drop-shadow">
+                <p className="text-xs md:text-lg font-medium text-green-50 opacity-90 mb-2 md:mb-6 max-w-lg drop-shadow line-clamp-3 md:line-clamp-none">
                   Kumpulkan poin dari setiap sampah yang kamu daur ulang dan tukarkan dengan voucher, elektronik, dan produk ramah lingkungan.
                 </p>
               </div>

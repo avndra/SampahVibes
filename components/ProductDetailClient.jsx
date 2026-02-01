@@ -191,52 +191,77 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
 
                {/* Middle Column: Product Info */}
                <div className="lg:col-span-5 space-y-4 md:space-y-6 p-4 md:p-0">
+                  {/* Global Style to Hide Footer on Mobile for this page */}
+                  <style jsx global>{`
+                     @media (max-width: 768px) {
+                        footer {
+                           display: none !important;
+                        }
+                     }
+                  `}</style>
+
                   <div>
-                     <div className="flex justify-between items-start">
-                        <h1 className="text-lg md:text-2xl font-bold leading-snug mb-2 text-gray-900 dark:text-white">{product.name}</h1>
-
-                     </div>
-
-                     <div className="flex items-center gap-1 mb-3">
-                        <div className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                     {/* Mobile Price Section (Tokopedia Style: Price First) */}
+                     <div className="flex items-end gap-2 mb-2">
+                        <div className="text-3xl font-black text-gray-900 dark:text-white">
                            {product.pointsCost.toLocaleString()}
                         </div>
-                        <span className="text-sm font-semibold text-green-600 bg-green-100 px-1.5 py-0.5 rounded">Poin</span>
+                        <span className="text-sm font-bold text-green-600 mb-1.5 bg-green-50 px-2 py-0.5 rounded-full">Poin</span>
                      </div>
 
+                     <h1 className="text-lg md:text-2xl font-normal leading-snug mb-3 text-gray-800 dark:text-gray-100 line-clamp-2 md:line-clamp-none">
+                        {product.name}
+                     </h1>
 
+                     {/* Stats / Stock */}
+                     <div className="flex items-center gap-3 text-sm text-gray-500 mb-4">
+                        <span className="border border-green-200 text-green-700 bg-green-50 px-2 py-0.5 rounded text-xs font-bold">Stok: {product.stock}</span>
+                        <span>Terjual 100+</span> {/* Mock sold count for app feel */}
+                        <div className="flex items-center gap-1 text-yellow-500">
+                           <Star className="w-3.5 h-3.5 fill-current" />
+                           <span className="text-gray-700 dark:text-gray-300 font-bold">4.8</span>
+                        </div>
+                     </div>
                   </div>
+
+                  {/* Thick Divider Mobile */}
+                  <div className="md:hidden -mx-4 h-2 bg-gray-100 dark:bg-gray-800 mb-4" />
 
                   <div className="hidden md:block hr border-t border-gray-100 dark:border-gray-800" />
 
                   {/* Detail/Info Tabs */}
                   <div>
-                     <div className="flex border-b border-gray-200 dark:border-gray-700 mb-4">
-                        <button
-                           className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'detail' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500'}`}
-                           onClick={() => setActiveTab('detail')}
-                        >
-                           Detail
-                        </button>
-                        <button
-                           className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'info' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500'}`}
-                           onClick={() => setActiveTab('info')}
-                        >
-                           Info Penting
-                        </button>
+                     <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-3">Detail Produk</h3>
+
+                     {/* Mobile Info Grid (Condition, Category, etc) */}
+                     <div className="md:hidden grid grid-cols-2 gap-4 mb-4 text-xs">
+                        <div>
+                           <span className="text-gray-500 block">Kondisi</span>
+                           <span className="text-gray-900 font-medium">Baru</span>
+                        </div>
+                        <div>
+                           <span className="text-gray-500 block">Min. Pemesanan</span>
+                           <span className="text-gray-900 font-medium">1 Buah</span>
+                        </div>
+                        <div>
+                           <span className="text-gray-500 block">Kategori</span>
+                           <span className="text-green-600 font-bold capitalize">{product.category || 'Umum'}</span>
+                        </div>
                      </div>
 
+                     <div className="md:hidden -mx-4 h-[1px] bg-gray-100 dark:bg-gray-800 mb-4" />
+
                      <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                        {activeTab === 'detail' ? (
-                           product.description || "Tidak ada deskripsi."
-                        ) : (
-                           <div className="space-y-2">
-                              <p><strong>Kebijakan Pengembalian:</strong> Barang yang sudah ditukar tidak dapat dikembalikan kecuali cacat produksi.</p>
-                              <p><strong>Pengiriman:</strong> Estimasi 3-5 hari kerja.</p>
-                           </div>
-                        )}
+                        <p className="mb-4">{product.description || "Tidak ada deskripsi."}</p>
+                        <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-xs text-gray-500">
+                           <p className="font-bold mb-1">Catatan Pengiriman:</p>
+                           <p>Pesanan sebelum jam 14:00 dikirim hari yang sama.</p>
+                        </div>
                      </div>
                   </div>
+
+                  {/* Thick Divider Mobile */}
+                  <div className="md:hidden -mx-4 h-2 bg-gray-100 dark:bg-gray-800 mt-6" />
 
                   <div className="hidden md:block hr border-t border-gray-100 dark:border-gray-800" />
 

@@ -44,11 +44,12 @@ export default function ProfileCard({ user }) {
   ];
 
   return (
-    <div className="bg-[#0a1a1a] rounded-3xl shadow-2xl border border-white/10 overflow-hidden">
+    <div
+      className="rounded-3xl shadow-2xl border border-white/10 overflow-hidden bg-cover bg-center"
+      style={{ backgroundImage: "url('/ui/profilecardBG1.png')" }}
+    >
       {/* Header with user info */}
       <div className="relative p-6">
-        {/* Background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 via-transparent to-teal-500/10" />
 
         <div className="relative flex items-center gap-4">
           {/* Avatar with level badge */}

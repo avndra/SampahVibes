@@ -6,7 +6,7 @@ import { TrendingUp } from 'lucide-react';
 
 export default function ProgressChart({ monthlyPoints }) {
   const months = getMonthsArray(6);
-  
+
   const data = months.map(month => ({
     month: getMonthName(month).split(' ')[0], // Short month name
     points: monthlyPoints?.[month] || 0
@@ -15,44 +15,37 @@ export default function ProgressChart({ monthlyPoints }) {
   const totalPoints = data.reduce((sum, item) => sum + item.points, 0);
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-6 border-2 border-gray-100 dark:border-gray-800">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="h-6 w-6 text-green-600" />
-            <h3 className="text-2xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-              Progres Poin
-            </h3>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 font-semibold">
-            6 bulan terakhir • Total: {totalPoints.toLocaleString()} poin
-          </p>
-        </div>
-      </div>
-
-      <ResponsiveContainer width="100%" height={300}>
-        <AreaChart data={data}>
+    <div className="w-full">
+      <ResponsiveContainer width="100%" height={150}>
+        <AreaChart data={data} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="colorPoints" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
           <XAxis
             dataKey="month"
-            stroke="#6b7280"
-            style={{ fontSize: '12px', fontWeight: 'bold' }}
+            stroke="#9ca3af"
+            style={{ fontSize: '10px', fontWeight: '500' }}
+            tickLine={false}
+            axisLine={false}
           />
           <YAxis
-            stroke="#6b7280"
-            style={{ fontSize: '12px', fontWeight: 'bold' }}
+            stroke="#9ca3af"
+            style={{ fontSize: '10px', fontWeight: '500' }}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => `${value}`}
           />
           <Tooltip
             contentStyle={{
               backgroundColor: '#fff',
-              border: '2px solid #22c55e',
-              borderRadius: '12px',
+              border: 'none',
+              borderRadius: '8px',
+              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+              fontSize: '12px',
               fontWeight: 'bold'
             }}
           />
@@ -60,7 +53,7 @@ export default function ProgressChart({ monthlyPoints }) {
             type="monotone"
             dataKey="points"
             stroke="#22c55e"
-            strokeWidth={3}
+            strokeWidth={2}
             fill="url(#colorPoints)"
           />
         </AreaChart>

@@ -424,3 +424,18 @@ input[type="password"]::-ms-clear {
 .btn-logout:active {
   transform: translate(2px, 2px);
 }
+
+/* Infinite Scroll Animation for Product Slider */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
+}
