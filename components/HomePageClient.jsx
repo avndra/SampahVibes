@@ -11,7 +11,7 @@ import ProductCard from '@/components/ProductCard';
 import ProgressChart from '@/components/ProgressChart';
 import ScanButton from '@/components/ScanButton';
 import HeroCarousel from '@/components/HeroCarousel';
-import { TreePine, ChevronRight, Leaf, Wind, Droplets, ArrowRight, ScanLine, Coins, Gift, Sparkles, History, Bell } from 'lucide-react';
+import { TreePine, ChevronRight, Leaf, Wind, Droplets, ArrowRight, ScanLine, Coins, Gift, Sparkles, History, Bell, BookOpen } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 // ... (skip lines)
@@ -222,7 +222,7 @@ function HowItWorks() {
       step: 1,
       icon: ScanLine,
       title: 'Scan Sampahmu',
-      description: 'Arahkan kamera ke barcode botol plastik atau sampah elektronik. Sistem akan mendeteksi jenis dan berat otomatis.',
+      description: 'Sistem akan mendeteksi jenis dan berat otomatis dari barcode.',
       color: 'from-blue-500 to-cyan-500',
       bgColor: 'bg-blue-500/10',
     },
@@ -303,7 +303,7 @@ function ProductSlider({ products }) {
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-transparent text-purple-500 text-sm font-bold mb-4">
         </div>
         <h2 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white mb-4">
-          Tukar Poin dengan <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">Hadiah Menarik</span>
+          Tukar Poin dengan Hadiah Menarik
         </h2>
         <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto text-lg">
           Dari tumbler premium hingga voucher belanja. Pilihan rewards yang bikin semangat daur ulang!
@@ -368,15 +368,15 @@ function ProductSlider({ products }) {
             sx={{
               borderRadius: '16px',
               textTransform: 'none',
-              background: 'linear-gradient(135deg, #9333ea 0%, #ec4899 100%)',
+              backgroundColor: '#16a34a', // Solid green
               fontSize: '1rem',
               fontWeight: '700',
               padding: '14px 40px',
-              boxShadow: '0 10px 30px rgba(147, 51, 234, 0.3)',
+              boxShadow: '0 10px 30px rgba(22, 163, 74, 0.3)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #7e22ce 0%, #db2777 100%)',
+                backgroundColor: '#15803d', // Darker green on hover
                 transform: 'translateY(-2px)',
-                boxShadow: '0 15px 40px rgba(147, 51, 234, 0.4)',
+                boxShadow: '0 15px 40px rgba(22, 163, 74, 0.4)',
               },
             }}
           >
@@ -391,7 +391,7 @@ function ProductSlider({ products }) {
 
 import OnboardingGuide from '@/components/OnboardingGuide';
 
-import QuickActions from '@/components/QuickActions';
+
 
 // --- Main HomePageClient Component ---
 
@@ -414,85 +414,95 @@ export default function HomePageClient({ session, user, featuredProducts, recent
         <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-blue-400/20 blur-[100px] animate-pulse [animation-delay:2s]"></div>
       </div>
 
-      <div className="relative z-10 max-w-md mx-auto md:max-w-7xl">
-        {/* Hero for Guests Only */}
-        {!session && (
-          <div className="relative min-h-[95vh] flex items-center overflow-hidden">
-            {/* ... Guest content unchanged ... */}
-            <div className="absolute inset-0 z-0">
-              <Image
-                src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2070"
-                alt="Hero"
-                fill
-                className="object-cover"
-                unoptimized
-                priority
-              />
-              <div className="absolute inset-0 bg-black/60 dark:bg-black/70"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent"></div>
-            </div>
+      {/* Hero for Guests Only - Full Width */}
+      {!session && (
+        <div className="relative min-h-[95vh] w-full flex items-center overflow-hidden">
+          {/* Background Image & Overlay */}
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=2070"
+              alt="Hero"
+              fill
+              className="object-cover"
+              unoptimized
+              priority
+            />
+            <div className="absolute inset-0 bg-black/60 dark:bg-black/70"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent"></div>
+          </div>
 
-            <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div className="text-left animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-2xl">
-                  <div className="inline-flex items-center gap-2 py-2 px-4 rounded-full bg-green-500/20 backdrop-blur-md border border-green-500/30 text-green-300 text-sm font-bold tracking-wider mb-6 hover:bg-green-500/30 transition-colors">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                    </span>
-                    REVOLUSI DAUR ULANG
+          <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div className="text-left animate-in fade-in slide-in-from-bottom-8 duration-1000 max-w-2xl">
+                <div className="inline-flex items-center gap-2 py-2 px-4 rounded-full bg-green-500/20 backdrop-blur-md border border-green-500/30 text-green-300 text-sm font-bold tracking-wider mb-6 hover:bg-green-500/30 transition-colors">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                  </span>
+                  REVOLUSI DAUR ULANG
+                </div>
+
+                <h1 className="text-5xl md:text-7xl font-black text-white mb-6 leading-[1.1] drop-shadow-2xl tracking-tight">
+                  Ubah <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400">Sampah</span> Menjadi <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400">Poin</span>
+                </h1>
+
+                <p className="text-lg md:text-xl text-gray-300 mb-10 leading-relaxed font-light border-l-4 border-green-500 pl-6 bg-black/20 py-2 rounded-r-lg backdrop-blur-sm">
+                  Bergabunglah dengan komunitas peduli lingkungan. Scan sampahmu dengan kamera, kumpulkan poin, dan tukarkan dengan hadiah menarik.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Link href="/login" className="w-full sm:w-auto">
+                    <Button
+                      variant="contained"
+                      size="large"
+                      sx={{
+                        borderRadius: '16px',
+                        textTransform: 'none',
+                        backgroundColor: '#16a34a',
+                        fontSize: '1.1rem',
+                        fontWeight: '800',
+                        padding: '16px 48px',
+                        boxShadow: '0 0 25px rgba(22, 163, 74, 0.4)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        '&:hover': {
+                          backgroundColor: '#15803d',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 10px 30px rgba(22, 163, 74, 0.6)',
+                        },
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                    >
+                      Mulai Sekarang
+                    </Button>
+                  </Link>
+                </div>
+                {/* Trust Indicators */}
+                <div className="mt-12 flex items-center gap-6 text-gray-400 text-sm font-medium">
+                  <div className="flex -space-x-3">
+                    {[1, 2, 3, 4].map(i => (
+                      <div key={i} className="w-10 h-10 rounded-full border-2 border-black bg-gray-800 flex items-center justify-center overflow-hidden">
+                        <Image src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`} width={40} height={40} alt="User" unoptimized />
+                      </div>
+                    ))}
                   </div>
-
-                  <h1 className="text-5xl md:text-7xl font-black text-white mb-6 leading-[1.1] drop-shadow-2xl tracking-tight">
-                    Ubah <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400">Sampah</span> Menjadi <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400">Poin</span>
-                  </h1>
-
-                  <p className="text-lg md:text-xl text-gray-300 mb-10 leading-relaxed font-light border-l-4 border-green-500 pl-6 bg-black/20 py-2 rounded-r-lg backdrop-blur-sm">
-                    Bergabunglah dengan komunitas peduli lingkungan. Scan sampahmu dengan kamera, kumpulkan poin, dan tukarkan dengan hadiah menarik.
-                  </p>
-
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <Link href="/login" className="w-full sm:w-auto">
-                      <Button
-                        variant="contained"
-                        size="large"
-                        sx={{
-                          borderRadius: '16px',
-                          textTransform: 'none',
-                          backgroundColor: '#16a34a',
-                          fontSize: '1.1rem',
-                          fontWeight: '800',
-                          padding: '16px 48px',
-                          boxShadow: '0 0 25px rgba(22, 163, 74, 0.4)',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          '&:hover': {
-                            backgroundColor: '#15803d',
-                            transform: 'translateY(-2px)',
-                            boxShadow: '0 10px 30px rgba(22, 163, 74, 0.6)',
-                          },
-                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                        }}
-                      >
-                        Mulai Sekarang
-                      </Button>
-                    </Link>
-                  </div>
-                  {/* Trust Indicators */}
-                  <div className="mt-12 flex items-center gap-6 text-gray-400 text-sm font-medium">
-                    <div className="flex -space-x-3">
-                      {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="w-10 h-10 rounded-full border-2 border-black bg-gray-800 flex items-center justify-center overflow-hidden">
-                          <Image src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`} width={40} height={40} alt="User" unoptimized />
-                        </div>
-                      ))}
-                    </div>
-                    <span>Dipercaya 1000+ Pengguna</span>
-                  </div>
+                  <span>Dipercaya 1000+ Pengguna</span>
                 </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Logged-in User Promo Banner (HeroCarousel) - Full Width */}
+      {session && user && (
+        <div className="w-full">
+          <HeroCarousel />
+        </div>
+      )}
+
+      <div className="relative z-10 max-w-md mx-auto md:max-w-7xl">
+        {/* Hero for Guests Only - REMOVED from here */}
+
 
         {/* Main Content Container */}
         <div className={`px-4 sm:px-6 lg:px-8 relative ${!session ? '-mt-20' : 'pt-6'}`}>
@@ -500,10 +510,7 @@ export default function HomePageClient({ session, user, featuredProducts, recent
           {session && user && (
             <div className="space-y-6">
 
-              {/* 0. Promo Banner (HeroCarousel) - Full Width on Mobile */}
-              <div className="w-full overflow-hidden rounded-none md:rounded-3xl shadow-lg -mx-4 md:mx-0 w-[calc(100%+2rem)] md:w-full">
-                <HeroCarousel />
-              </div>
+
 
               {/* 1. Mobile App Header Style */}
               <div className="flex justify-between items-center mb-2">
@@ -522,6 +529,9 @@ export default function HomePageClient({ session, user, featuredProducts, recent
                     {/* Note: In a real app, red dot would be conditional based on unread count */}
                     <Bell className="w-5 h-5" />
                   </Link>
+                  <Link href="/help" className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative">
+                    <BookOpen className="w-5 h-5" />
+                  </Link>
                 </div>
               </div>
 
@@ -530,10 +540,7 @@ export default function HomePageClient({ session, user, featuredProducts, recent
                 <DashboardStats user={user} />
               </div>
 
-              {/* 3. Quick Actions Grid */}
-              <div className="bg-white dark:bg-gray-900 rounded-3xl p-2 shadow-sm border border-gray-100 dark:border-gray-800">
-                <QuickActions />
-              </div>
+
 
               {/* 4. Impact & Charts (Stacked) */}
               <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800">

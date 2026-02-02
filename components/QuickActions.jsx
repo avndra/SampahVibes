@@ -6,13 +6,6 @@ import { ScanLine, Gift, History, BookOpen } from 'lucide-react';
 export default function QuickActions() {
     const actions = [
         {
-            label: 'Scan',
-            icon: <ScanLine className="w-6 h-6 text-white" />,
-            href: '/scan',
-            color: 'bg-green-500',
-            shadow: 'shadow-green-500/30'
-        },
-        {
             label: 'Tukar',
             icon: <Gift className="w-6 h-6 text-white" />,
             href: '/shop',
@@ -36,7 +29,7 @@ export default function QuickActions() {
     ];
 
     return (
-        <div className="grid grid-cols-4 gap-4 px-4 py-6">
+        <div className="grid grid-cols-3 gap-4 px-4 py-6">
             {actions.map((action, index) => (
                 <Link key={index} href={action.href} className="flex flex-col items-center group">
                     <div className={`w-12 h-12 rounded-2xl ${action.color} flex items-center justify-center shadow-lg ${action.shadow} mb-2 transform group-hover:scale-105 transition-transform duration-200`}>

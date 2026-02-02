@@ -308,7 +308,7 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
                            onClick={handleOpenCheckout}
                            disabled={!canRedeem || isRedeeming || product.stock === 0}
                         >
-                           {isRedeeming ? 'Memproses...' : product.stock === 0 ? 'Stok Habis' : 'Beli Langsung'}
+                           {isRedeeming ? 'Memproses...' : product.stock === 0 ? 'Stok Habis' : 'Tukar Langsung'}
                         </Button>
                         <Button
                            variant="outline"
@@ -342,7 +342,7 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold h-10"
                disabled={!canRedeem || isRedeeming || product.stock === 0}
             >
-               {isRedeeming ? 'Proses...' : 'Beli Langsung'}
+               {isRedeeming ? 'Proses...' : 'Tukar Langsung'}
             </Button>
          </div>
 
@@ -415,13 +415,7 @@ export default function ProductDetailClient({ product, userPoints, isLoggedIn })
                         className="bg-gray-100 border-gray-200 cursor-not-allowed"
                      />
                   </div>
-                  <Input
-                     placeholder="Catatan untuk kurir (opsional)"
-                     value={shippingData.note}
-                     onChange={(e) => setShippingData({ ...shippingData, note: e.target.value })}
-                     className="bg-white border-gray-200 pointer-events-auto"
-                     style={{ filter: 'none' }}
-                  />
+
                </div>
 
                {/* Order Summary */}

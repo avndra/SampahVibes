@@ -23,11 +23,7 @@ export default function Footer() {
                         <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
                             Platform daur ulang modern yang mengubah sampah plastikmu menjadi poin dan hadiah menarik. Bergabunglah dalam gerakan hijau ini!
                         </p>
-                        <div className="flex gap-4 pt-2">
-                            <SocialIcon icon={<Facebook className="w-4 h-4" />} href="#" />
-                            <SocialIcon icon={<Instagram className="w-4 h-4" />} href="#" />
-                            <SocialIcon icon={<Twitter className="w-4 h-4" />} href="#" />
-                        </div>
+
                     </div>
 
                     {/* 2. Quick Links */}
@@ -55,19 +51,16 @@ export default function Footer() {
                     </div>
 
                     {/* 4. Newsletter */}
+                    {/* 4. Social Media */}
                     <div>
-                        <h3 className="font-bold text-gray-900 dark:text-white mb-6">Tetap Terhubung</h3>
+                        <h3 className="font-bold text-gray-900 dark:text-white mb-6">Ikuti Kami</h3>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                            Dapatkan tips daur ulang dan info promo poin terbaru.
+                            Dapatkan info terbaru di media sosial kami.
                         </p>
-                        <div className="flex gap-2">
-                            <Input
-                                placeholder="Email kamu..."
-                                className="bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 focus-visible:ring-green-500"
-                            />
-                            <Button size="icon" className="bg-green-600 hover:bg-green-700 text-white shrink-0">
-                                <ArrowRight className="w-4 h-4" />
-                            </Button>
+                        <div className="flex gap-4">
+                            <SocialIcon icon={<Facebook className="w-5 h-5" />} href="#" />
+                            <SocialIcon icon={<Instagram className="w-5 h-5" />} href="#" />
+                            <SocialIcon icon={<Twitter className="w-5 h-5" />} href="#" />
                         </div>
                     </div>
                 </div>
