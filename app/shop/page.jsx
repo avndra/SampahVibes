@@ -6,7 +6,7 @@ import { useAppContext } from '@/context/AppContext';
 import { Loader2, Search, SlidersHorizontal, Filter, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+
 
 export default function ShopPage() {
   const { user } = useAppContext();
@@ -149,15 +149,7 @@ export default function ShopPage() {
                 </div>
               </div>
             </div>
-            {/* Hanging Flower Decoration */}
-            <div className="absolute inset-x-0 top-[241px]">
-              <DotLottieReact
-                src="https://lottie.host/e11faadc-56a9-424d-ac71-107cf2894413/jF8P7UrKUD.lottie"
-                loop
-                autoplay
-                style={{ width: '100%', height: '190px' }}
-              />
-            </div>
+
           </aside>
 
           {/* Main Content */}
