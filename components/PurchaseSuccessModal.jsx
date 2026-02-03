@@ -130,10 +130,8 @@ export default function PurchaseSuccessModal({ isOpen, onClose, transaction }) {
                 </div>
 
                 <div className="flex gap-3">
-                    <Button variant="outline" className="flex-1 border-gray-200 dark:border-gray-700" onClick={handleDownloadPDF} disabled={downloading}>
-                        {downloading ? 'Loading...' : <><FileText className="w-4 h-4 mr-2" /> PDF</>}
-                    </Button>
-                    <Button className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold" onClick={onClose}>
+                    {/* PDF Button removed as requested */}
+                    <Button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold" onClick={onClose}>
                         Selesai
                     </Button>
                 </div>
