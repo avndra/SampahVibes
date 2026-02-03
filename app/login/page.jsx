@@ -182,26 +182,7 @@ export default function LoginPage() {
                     </div>
                   </button>
                 </div>
-                {isLogin && (
-                  <div className="flex justify-end mt-2">
-                    <button
-                      type="button"
-                      onClick={() => toast.info('Hubungi Admin untuk reset: +62 812-3456-7890', {
-                        duration: 10000,
-                        action: {
-                          label: 'Salin',
-                          onClick: () => {
-                            navigator.clipboard.writeText('+6281234567890');
-                            toast.success('Nomor Admin disalin!');
-                          }
-                        }
-                      })}
-                      className="text-sm font-bold text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors"
-                    >
-                      Lupa Password?
-                    </button>
-                  </div>
-                )}
+
               </div>
 
               <Button
