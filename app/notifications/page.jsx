@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, Truck, CheckCircle, XCircle, Info, Check, ArrowLeft } from 'lucide-react';
+import { Bell, Truck, CheckCircle, XCircle, Info, Check, ArrowLeft, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
@@ -11,6 +11,7 @@ export default function NotificationsPage() {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [copiedId, setCopiedId] = useState(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -57,6 +58,21 @@ export default function NotificationsPage() {
         if (title?.includes('Selesai')) return { text: 'Selesai', color: 'bg-green-100 text-green-700' };
         if (title?.includes('Dibatalkan')) return { text: 'Dibatalkan', color: 'bg-red-100 text-red-700' };
         return { text: 'Update', color: 'bg-blue-100 text-blue-700' };
+    };
+
+    const extractTrackingNumber = (message) => {
+        const match = message?.match(/Nomor Resi:\s*([A-Z0-9-]+)/);
+        return match ? match[1] : null;
+    };
+
+    const handleCopyTracking = async (trackingNumber, notifId) => {
+        try {
+            await navigator.clipboard.writeText(trackingNumber);
+            setCopiedId(notifId);
+            setTimeout(() => setCopiedId(null), 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
     };
 
     return (
@@ -133,6 +149,27 @@ export default function NotificationsPage() {
                                             <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                                                 {notif.message}
                                             </p>
+                                            {extractTrackingNumber(notif.message) && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleCopyTracking(extractTrackingNumber(notif.message), notif._id);
+                                                    }}
+                                                    className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 hover:bg-green-100 border border-green-200 transition-all text-sm font-bold text-green-700"
+                                                >
+                                                    {copiedId === notif._id ? (
+                                                        <>
+                                                            <Check className="w-3.5 h-3.5" />
+                                                            Resi Tersalin!
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Copy className="w-3.5 h-3.5" />
+                                                            Salin Nomor Resi
+                                                        </>
+                                                    )}
+                                                </button>
+                                            )}
                                             {!notif.read && (
                                                 <div className="mt-3 flex items-center gap-1.5 text-xs font-bold text-blue-500">
                                                     <div className="w-2 h-2 rounded-full bg-blue-500"></div>

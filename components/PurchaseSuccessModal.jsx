@@ -3,39 +3,15 @@
 import { Suspense, useState, useRef } from 'react';
 import Modal from './Modal';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Download, FileText, Share2, Copy, Check } from 'lucide-react';
+import { CheckCircle, Download, FileText, Share2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import Image from 'next/image';
 
 export default function PurchaseSuccessModal({ isOpen, onClose, transaction }) {
     const [downloading, setDownloading] = useState(false);
-    const [copied, setCopied] = useState(false);
 
     if (!transaction) return null;
-
-    // Generate tracking number from product ID
-    const generateTrackingNumber = (productId) => {
-        if (!productId) return 'N/A';
-        const prefix = 'RV'; // RecycleVibes
-        // Handle productId as either ObjectId string or object with _id
-        const idString = typeof productId === 'string' ? productId : (productId._id || productId.toString());
-        const idPart = idString.slice(-8).toUpperCase();
-        const timestamp = Date.now().toString().slice(-6);
-        return `${prefix}-${idPart}-${timestamp}`;
-    };
-
-    const trackingNumber = transaction.trackingNumber || generateTrackingNumber(transaction.productId);
-
-    const handleCopyTracking = async () => {
-        try {
-            await navigator.clipboard.writeText(trackingNumber);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-            console.error('Failed to copy:', err);
-        }
-    };
 
     const handleDownloadPDF = async () => {
         setDownloading(true);
@@ -122,30 +98,6 @@ export default function PurchaseSuccessModal({ isOpen, onClose, transaction }) {
                 <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 text-left border border-gray-100 dark:border-gray-700 relative overflow-hidden">
                     {/* Decorative jagged edge bottom could be CSS, but kept simple here */}
                     <div className="border-b border-dashed border-gray-300 dark:border-gray-600 pb-4 mb-4">
-                        <div className="flex justify-between items-start mb-3">
-                            <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Nomor Resi</span>
-                            <button
-                                onClick={handleCopyTracking}
-                                className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-green-50 hover:bg-green-100 border border-green-200 transition-all duration-200 group"
-                            >
-                                {copied ? (
-                                    <>
-                                        <Check className="w-3.5 h-3.5 text-green-600" />
-                                        <span className="text-xs font-bold text-green-600">Tersalin!</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Copy className="w-3.5 h-3.5 text-green-600 group-hover:scale-110 transition-transform" />
-                                        <span className="text-xs font-bold text-green-600">Salin</span>
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                        <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-3 rounded-xl border border-green-100 dark:border-green-800 mb-3">
-                            <p className="text-sm font-mono font-bold text-green-700 dark:text-green-300 text-center tracking-wider">
-                                {trackingNumber}
-                            </p>
-                        </div>
                         <div className="flex justify-between items-start">
                             <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Tanggal</span>
                             <span className="text-xs text-gray-600 dark:text-gray-300">{new Date(transaction.createdAt).toLocaleDateString('id-ID')}</span>

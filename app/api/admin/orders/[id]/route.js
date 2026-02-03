@@ -28,8 +28,8 @@ export async function PATCH(request, { params }) {
     if (status === 'shipped' && !order.trackingNumber) {
       // Resi dari product ID
       const idString = String(order.productId._id || order.productId);
-      const idPart = idString.slice(-8).toUpperCase();
-      const timestamp = Date.now().toString().slice(-6);
+      const idPart = idString.slice(-8).toUpperCase(); // 8 karakter last
+      const timestamp = Date.now().toString().slice(-6); // 6 digit last
       trackingNumber = `RV-${idPart}-${timestamp}`;
     }
 
