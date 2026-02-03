@@ -22,21 +22,23 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    // Generate tracking number from product ID if shipping and no custom tracking provided
-    let trackingNumber = adminNote;
-    if (status === 'shipped' && !adminNote) {
-      const prefix = 'RV'; // RecycleVibes
-      const idPart = order.productId.toString().slice(-8).toUpperCase();
+    // Auto-generate tracking number ONLY when status becomes 'shipped' and no tracking exists yet
+    let trackingNumber = order.trackingNumber; // Keep existing tracking if any
+
+    if (status === 'shipped' && !order.trackingNumber) {
+      // Generate tracking number from product ID
+      const idString = String(order.productId._id || order.productId);
+      const idPart = idString.slice(-8).toUpperCase();
       const timestamp = Date.now().toString().slice(-6);
-      trackingNumber = `${prefix}-${idPart}-${timestamp}`;
+      trackingNumber = `RV-${idPart}-${timestamp}`;
     }
 
     const updatedOrder = await Activity.findByIdAndUpdate(
       id,
       {
         status,
-        trackingNumber: trackingNumber || order.trackingNumber,
-        adminNote: trackingNumber || adminNote
+        trackingNumber: trackingNumber, // Save auto-generated or existing tracking
+        adminNote: adminNote || order.adminNote // Save admin note separately
       },
       { new: true }
     )

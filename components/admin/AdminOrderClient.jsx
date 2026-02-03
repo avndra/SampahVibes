@@ -36,15 +36,14 @@ export default function AdminOrderClient({ initialOrders }) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [copiedTracking, setCopiedTracking] = useState(false);
 
-  // build nomor order ID (6 digit dibelakang dari timestamp, tengah digit id produk, RV judul)
+  // Generate tracking number (only displayed when status = shipped)
   const generatedTracking = useMemo(() => {
     if (!selectedOrder?.productId) return 'N/A';
     const idString = String(selectedOrder.productId._id || selectedOrder.productId);
     const idPart = idString.slice(-8).toUpperCase();
-    // 8 huruf last
-    const orderTimestamp = new Date(selectedOrder.timestamp || selectedOrder.createdAt).getTime().toString().slice(-6); // 6 huruf last
-    return `RV-${idPart}-${orderTimestamp}`; // mix pake judul
-  }, [selectedOrder?._id, selectedOrder?.productId]);
+    const orderTimestamp = new Date(selectedOrder.timestamp || selectedOrder.createdAt).getTime().toString().slice(-6);
+    return `RV-${idPart}-${orderTimestamp}`;
+  }, [selectedOrder?._id, selectedOrder?.productId, selectedOrder?.timestamp, selectedOrder?.createdAt]);
 
   // Sync local state with server props when router.refresh() finishes
   useEffect(() => {
@@ -78,11 +77,13 @@ export default function AdminOrderClient({ initialOrders }) {
       if (response.ok) {
         const updatedOrder = await response.json();
 
-        // Update local state instantly
+        // Update local state
         setOrders(orders.map(o => o._id === updatedOrder._id ? updatedOrder : o));
 
+        // Update show number
+        setSelectedOrder(updatedOrder);
+
         toast.success(`Order status updated to ${newStatus}`);
-        setSelectedOrder(null);
         setAdminNote('');
 
         // Refresh server data
@@ -330,46 +331,47 @@ export default function AdminOrderClient({ initialOrders }) {
           </div>
 
           <div>
-            <h3 className="font-bold text-gray-900 mb-2">Tracking Number</h3>
-            <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-2 relative">
-              <p className="text-xs text-gray-600 mb-1 font-semibold">Auto-generated from Product ID</p>
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-mono text-sm font-bold text-gray-900">
-                  {generatedTracking}
-                </p>
-                <button
-                  onClick={async () => {
-                    if (generatedTracking && generatedTracking !== 'N/A') {
-                      await navigator.clipboard.writeText(generatedTracking);
+            <h3 className="font-bold text-gray-900 mb-2">Resi</h3>
+            {selectedOrder?.status === 'shipped' && (
+              <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-2">
+                <p className="text-xs text-gray-600 mb-1 font-semibold">kode </p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-mono text-sm font-bold text-gray-900">
+                    {selectedOrder.trackingNumber || generatedTracking}
+                  </p>
+                  <button
+                    onClick={async () => {
+                      const trackNum = selectedOrder.trackingNumber || generatedTracking;
+                      await navigator.clipboard.writeText(trackNum);
                       setCopiedTracking(true);
                       toast.success('Nomor resi disalin!');
                       setTimeout(() => setCopiedTracking(false), 2000);
-                    }
-                  }}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 border border-gray-300 transition-all duration-200 group"
-                >
-                  {copiedTracking ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-gray-700" />
-                      <span className="text-xs font-bold text-gray-700">Tersalin!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5 text-gray-700 group-hover:scale-110 transition-transform" />
-                      <span className="text-xs font-bold text-gray-700">Salin</span>
-                    </>
-                  )}
-                </button>
+                    }}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 border border-gray-300 transition-all duration-200 group"
+                  >
+                    {copiedTracking ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-gray-700" />
+                        <span className="text-xs font-bold text-gray-700">Tersalin!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-gray-700 group-hover:scale-110 transition-transform" />
+                        <span className="text-xs font-bold text-gray-700">Salin</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
             <Input
-              placeholder="Or enter custom tracking number"
+              placeholder="Admin note (opsional)"
               value={adminNote}
               onChange={(e) => setAdminNote(e.target.value)}
               className="bg-gray-50 border-gray-200 rounded-xl"
             />
             <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-              <CheckCircle className="w-3 h-3" /> This tracking number will be visible to the user.
+              <CheckCircle className="w-3 h-3" /> Catatan admin untuk order ini (tidak wajib).
             </p>
           </div>
 
