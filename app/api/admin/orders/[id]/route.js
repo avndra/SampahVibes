@@ -16,9 +16,28 @@ export async function PATCH(request, { params }) {
 
     await connectDB();
 
+    // Get the order first to access productId
+    const order = await Activity.findById(id);
+    if (!order) {
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+    }
+
+    // Generate tracking number from product ID if shipping and no custom tracking provided
+    let trackingNumber = adminNote;
+    if (status === 'shipped' && !adminNote) {
+      const prefix = 'RV'; // RecycleVibes
+      const idPart = order.productId.toString().slice(-8).toUpperCase();
+      const timestamp = Date.now().toString().slice(-6);
+      trackingNumber = `${prefix}-${idPart}-${timestamp}`;
+    }
+
     const updatedOrder = await Activity.findByIdAndUpdate(
       id,
-      { status, adminNote },
+      {
+        status,
+        trackingNumber: trackingNumber || order.trackingNumber,
+        adminNote: trackingNumber || adminNote
+      },
       { new: true }
     )
       .populate('userId', 'name email avatar')
@@ -37,7 +56,7 @@ export async function PATCH(request, { params }) {
 
       if (status === 'shipped') {
         title = 'Pesanan Dikirim!';
-        message = `Hore! Pesanan ${updatedOrder.productName} sedang dalam perjalanan. ${adminNote ? `Catatan: ${adminNote}` : ''}`;
+        message = `Hore! Pesanan ${updatedOrder.productName} sedang dalam perjalanan. Nomor Resi: ${trackingNumber || 'Menunggu update'}`;
       } else if (status === 'completed') {
         title = 'Pesanan Selesai';
         message = `Pesanan ${updatedOrder.productName} telah selesai. Terima kasih telah menukarkan poin!`;

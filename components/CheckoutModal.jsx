@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button, Dialog, DialogContent, DialogTitle, IconButton, TextField } from '@mui/material';
-import { X, MapPin, Truck, StickyNote } from 'lucide-react';
+import { X, MapPin, Truck, StickyNote, Navigation } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 
@@ -14,7 +14,29 @@ export default function CheckoutModal({ isOpen, onClose, item, onConfirm }) {
 
     const [loading, setLoading] = useState(false);
     const [isLocating, setIsLocating] = useState(false);
-    const [locationVerified, setLocationVerified] = useState(false);
+
+    // Load saved address from localStorage on mount
+    useEffect(() => {
+        const savedAddress = localStorage.getItem('savedShippingAddress');
+        if (savedAddress) {
+            try {
+                const parsed = JSON.parse(savedAddress);
+                setAddress(parsed.address || '');
+                setCity(parsed.city || '');
+                setPostalCode(parsed.postalCode || '');
+            } catch (error) {
+                console.error('Failed to parse saved address:', error);
+            }
+        }
+    }, []);
+
+    // Auto-save address to localStorage whenever it changes
+    useEffect(() => {
+        if (address || city || postalCode) {
+            const shippingData = { address, city, postalCode };
+            localStorage.setItem('savedShippingAddress', JSON.stringify(shippingData));
+        }
+    }, [address, city, postalCode]);
 
     if (!item) return null;
 
@@ -44,8 +66,7 @@ export default function CheckoutModal({ isOpen, onClose, item, onConfirm }) {
                     setCity(cityData);
                     setPostalCode(postData);
 
-                    setLocationVerified(true);
-                    toast.success('Lokasi berhasil dikonfirmasi!');
+                    toast.success('Lokasi berhasil diambil dari GPS!');
                 } else {
                     toast.error('Gagal mendapatkan detail alamat');
                 }
@@ -56,14 +77,14 @@ export default function CheckoutModal({ isOpen, onClose, item, onConfirm }) {
             }
         }, (error) => {
             console.error(error);
-            toast.error('Gagal mengakses lokasi. Pastikan izin GPS aktif.');
+            toast.error('Gagal mengakses lokasi. Silakan input manual.');
             setIsLocating(false);
         });
     };
 
     const handleConfirm = async () => {
-        if (!locationVerified || !address) {
-            toast.error('Mohon verifikasi lokasi pengiriman terlebih dahulu.');
+        if (!address || !city) {
+            toast.error('Mohon lengkapi alamat dan kota pengiriman.');
             return;
         }
 
@@ -126,56 +147,79 @@ export default function CheckoutModal({ isOpen, onClose, item, onConfirm }) {
                             </div>
                         </div>
 
-                        {/* Shipping Form with Geolocation */}
+                        {/* Shipping Form with Manual Input */}
                         <div className="space-y-4">
-                            <label className="text-sm font-bold flex items-center gap-2 text-gray-700">
-                                <MapPin className="w-4 h-4 text-green-600" /> Pilih Lokasi Pengiriman
-                            </label>
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="text-sm font-bold flex items-center gap-2 text-gray-700">
+                                    <MapPin className="w-4 h-4 text-green-600" /> Alamat Pengiriman
+                                </label>
+                                <Button
+                                    onClick={handleGetLocation}
+                                    disabled={isLocating}
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{
+                                        textTransform: 'none',
+                                        fontWeight: 'bold',
+                                        fontSize: '0.75rem',
+                                        borderRadius: 2,
+                                        borderColor: '#10b981',
+                                        color: '#10b981',
+                                        '&:hover': {
+                                            backgroundColor: '#d1fae5',
+                                            borderColor: '#059669'
+                                        }
+                                    }}
+                                >
+                                    <Navigation className={`w-3.5 h-3.5 mr-1 ${isLocating ? 'animate-spin' : ''}`} />
+                                    {isLocating ? 'Mencari...' : 'Auto-Fill GPS'}
+                                </Button>
+                            </div>
 
-                            {/* Location Verifier UI */}
-                            <div className={`relative w-full p-4 rounded-xl border-2 transition-colors group ${locationVerified ? 'bg-green-50 border-green-500' : 'bg-gray-50 border-gray-200 hover:border-green-300'}`}>
-                                {!locationVerified ? (
-                                    <div className="flex flex-col items-center justify-center py-2 text-center">
-                                        <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-3">
-                                            <MapPin className={`w-6 h-6 ${isLocating ? 'animate-bounce' : ''}`} />
-                                        </div>
-                                        <h4 className="font-bold text-gray-800 mb-1">Verifikasi Lokasi Diperlukan</h4>
-                                        <p className="text-sm text-gray-500 mb-4 max-w-xs mx-auto">Kami perlu mengakses lokasi Anda untuk memastikan pengiriman yang akurat.</p>
-                                        <Button
-                                            onClick={handleGetLocation}
-                                            disabled={isLocating}
-                                            variant="contained"
-                                            sx={{
-                                                borderRadius: 2,
-                                                textTransform: 'none',
-                                                fontWeight: 'bold',
-                                                backgroundColor: '#16a34a',
-                                                '&:hover': { backgroundColor: '#15803d' }
-                                            }}
-                                        >
-                                            {isLocating ? 'Mencari Lokasi...' : '📍 Ambil Lokasi Saya'}
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-1 flex-shrink-0">
-                                            <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center">
-                                                <MapPin className="w-4 h-4" />
-                                            </div>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start">
-                                                <h4 className="font-bold text-gray-800 text-sm">Lokasi Terverifikasi</h4>
-                                                <button onClick={() => setLocationVerified(false)} className="text-xs text-red-500 hover:underline font-bold ml-2">Ubah</button>
-                                            </div>
-                                            <p className="text-xs text-gray-600 mt-1 break-words">{address}</p>
-                                            <div className="flex gap-2 mt-2">
-                                                {city && <span className="text-[10px] bg-white border border-green-200 text-green-700 px-2 py-0.5 rounded-full font-bold">{city}</span>}
-                                                <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">GPS Akurat</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
+                            {/* address */}
+                            <TextField
+                                label="Alamat Lengkap"
+                                fullWidth
+                                variant="outlined"
+                                size="small"
+                                required
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                placeholder="Jl. Contoh No. 123, RT/RW 01/02, Kelurahan..."
+                                multiline
+                                rows={2}
+                                InputProps={{
+                                    sx: { borderRadius: 3 }
+                                }}
+                            />
+
+                            {/* City and Postal Coded */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <TextField
+                                    label="Kota"
+                                    fullWidth
+                                    variant="outlined"
+                                    size="small"
+                                    required
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                    placeholder="Jakarta"
+                                    InputProps={{
+                                        sx: { borderRadius: 3 }
+                                    }}
+                                />
+                                <TextField
+                                    label="Kode Pos"
+                                    fullWidth
+                                    variant="outlined"
+                                    size="small"
+                                    value={postalCode}
+                                    onChange={(e) => setPostalCode(e.target.value)}
+                                    placeholder="12345"
+                                    InputProps={{
+                                        sx: { borderRadius: 3 }
+                                    }}
+                                />
                             </div>
 
                             {/* Note Input */}
@@ -192,6 +236,12 @@ export default function CheckoutModal({ isOpen, onClose, item, onConfirm }) {
                                     sx: { borderRadius: 3 }
                                 }}
                             />
+
+                            {/* Info text */}
+                            <p className="text-xs text-gray-500 flex items-center gap-1">
+                                <MapPin className="w-3 h-3" />
+                                Alamat akan disimpan otomatis untuk pembelian selanjutnya
+                            </p>
                         </div>
 
                         {/* Total Summary & Action */}
@@ -207,7 +257,7 @@ export default function CheckoutModal({ isOpen, onClose, item, onConfirm }) {
                                 variant="contained"
                                 fullWidth
                                 size="large"
-                                disabled={loading || !locationVerified}
+                                disabled={loading || !address || !city}
                                 onClick={handleConfirm}
                                 sx={{
                                     height: 52,
@@ -227,7 +277,7 @@ export default function CheckoutModal({ isOpen, onClose, item, onConfirm }) {
                                     }
                                 }}
                             >
-                                {loading ? 'Memproses...' : !locationVerified ? 'Verifikasi Lokasi Dulu' : 'Konfirmasi & Tukar Poin'}
+                                {loading ? 'Memproses...' : (!address || !city) ? 'Lengkapi Alamat Dulu' : 'Konfirmasi & Tukar Poin'}
                             </Button>
                         </div>
                     </div>

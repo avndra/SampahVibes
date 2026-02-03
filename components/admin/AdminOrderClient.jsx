@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Search,
@@ -13,7 +13,9 @@ import {
   MoreVertical,
   MapPin,
   MessageSquare,
-  ShoppingBag
+  ShoppingBag,
+  Copy,
+  Check
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,6 +34,17 @@ export default function AdminOrderClient({ initialOrders }) {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [adminNote, setAdminNote] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [copiedTracking, setCopiedTracking] = useState(false);
+
+  // build nomor order ID (6 digit dibelakang dari timestamp, tengah digit id produk, RV judul)
+  const generatedTracking = useMemo(() => {
+    if (!selectedOrder?.productId) return 'N/A';
+    const idString = String(selectedOrder.productId._id || selectedOrder.productId);
+    const idPart = idString.slice(-8).toUpperCase();
+    // 8 huruf last
+    const orderTimestamp = new Date(selectedOrder.timestamp || selectedOrder.createdAt).getTime().toString().slice(-6); // 6 huruf last
+    return `RV-${idPart}-${orderTimestamp}`; // mix pake judul
+  }, [selectedOrder?._id, selectedOrder?.productId]);
 
   // Sync local state with server props when router.refresh() finishes
   useEffect(() => {
@@ -214,6 +227,16 @@ export default function AdminOrderClient({ initialOrders }) {
                       </span>
                     )}
                   </div>
+
+                  {order.trackingNumber && (
+                    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-xl border border-purple-100">
+                      <p className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">Nomor Tracking</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-mono font-bold text-purple-700 text-sm">{order.trackingNumber}</p>
+                        <Truck className="w-4 h-4 text-purple-400" />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {order.adminNote && (
@@ -307,15 +330,46 @@ export default function AdminOrderClient({ initialOrders }) {
           </div>
 
           <div>
-            <h3 className="font-bold text-gray-900 mb-2">Admin Note / Resi</h3>
+            <h3 className="font-bold text-gray-900 mb-2">Tracking Number</h3>
+            <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-2 relative">
+              <p className="text-xs text-gray-600 mb-1 font-semibold">Auto-generated from Product ID</p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-mono text-sm font-bold text-gray-900">
+                  {generatedTracking}
+                </p>
+                <button
+                  onClick={async () => {
+                    if (generatedTracking && generatedTracking !== 'N/A') {
+                      await navigator.clipboard.writeText(generatedTracking);
+                      setCopiedTracking(true);
+                      toast.success('Nomor resi disalin!');
+                      setTimeout(() => setCopiedTracking(false), 2000);
+                    }
+                  }}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 border border-gray-300 transition-all duration-200 group"
+                >
+                  {copiedTracking ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-gray-700" />
+                      <span className="text-xs font-bold text-gray-700">Tersalin!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-gray-700 group-hover:scale-110 transition-transform" />
+                      <span className="text-xs font-bold text-gray-700">Salin</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
             <Input
-              placeholder="Add note for user (e.g., Tracking Number)"
+              placeholder="Or enter custom tracking number"
               value={adminNote}
               onChange={(e) => setAdminNote(e.target.value)}
               className="bg-gray-50 border-gray-200 rounded-xl"
             />
             <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-              <CheckCircle className="w-3 h-3" /> This note will be visible to the user.
+              <CheckCircle className="w-3 h-3" /> This tracking number will be visible to the user.
             </p>
           </div>
 
