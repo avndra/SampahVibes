@@ -160,10 +160,7 @@ export default function ShopPage() {
                 Menampilkan <strong>{filteredProducts.length}</strong> produk
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Urutkan:</span>
-                <button className="text-sm font-bold flex items-center gap-1">
-                  Paling Sesuai <ChevronDown className="w-4 h-4" />
-                </button>
+                
               </div>
             </div>
 
