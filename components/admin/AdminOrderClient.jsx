@@ -334,7 +334,7 @@ export default function AdminOrderClient({ initialOrders }) {
             <h3 className="font-bold text-gray-900 mb-2">Resi</h3>
             {selectedOrder?.status === 'shipped' && (
               <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 mb-2">
-                <p className="text-xs text-gray-600 mb-1 font-semibold">kode </p>
+                <p className="text-xs text-gray-600 mb-1 font-semibold">kode resi </p>
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-mono text-sm font-bold text-gray-900">
                     {selectedOrder.trackingNumber || generatedTracking}
