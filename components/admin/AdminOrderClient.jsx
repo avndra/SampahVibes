@@ -230,11 +230,20 @@ export default function AdminOrderClient({ initialOrders }) {
                   </div>
 
                   {order.trackingNumber && (
-                    <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-xl border border-purple-100">
-                      <p className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-2">Nomor Tracking</p>
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                      <p className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Nomor Tracking</p>
                       <div className="flex items-center justify-between gap-2">
-                        <p className="font-mono font-bold text-purple-700 text-sm">{order.trackingNumber}</p>
-                        <Truck className="w-4 h-4 text-purple-400" />
+                        <p className="font-mono font-bold text-gray-900 text-sm">{order.trackingNumber}</p>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(order.trackingNumber);
+                            toast.success('Nomor resi disalin!');
+                          }}
+                          className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 border border-gray-300 transition-all"
+                        >
+                          <Copy className="w-3.5 h-3.5 text-gray-700" />
+                        </button>
                       </div>
                     </div>
                   )}
