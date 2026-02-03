@@ -22,11 +22,11 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    // Auto-generate tracking number ONLY when status becomes 'shipped' and no tracking exists yet
-    let trackingNumber = order.trackingNumber; // Keep existing tracking if any
+    // shipped
+    let trackingNumber = order.trackingNumber;
 
     if (status === 'shipped' && !order.trackingNumber) {
-      // Generate tracking number from product ID
+      // Resi dari product ID
       const idString = String(order.productId._id || order.productId);
       const idPart = idString.slice(-8).toUpperCase();
       const timestamp = Date.now().toString().slice(-6);
@@ -37,8 +37,8 @@ export async function PATCH(request, { params }) {
       id,
       {
         status,
-        trackingNumber: trackingNumber, // Save auto-generated or existing tracking
-        adminNote: adminNote || order.adminNote // Save admin note separately
+        trackingNumber: trackingNumber,
+        adminNote: adminNote || order.adminNote
       },
       { new: true }
     )
