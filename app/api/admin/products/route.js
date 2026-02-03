@@ -19,15 +19,27 @@ export async function GET(req) {
     const limit = parseInt(searchParams.get('limit') || '10', 10);
     const search = searchParams.get('search') || '';
 
-    const query = search
-      ? {
-        $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { category: { $regex: search, $options: 'i' } },
-        ],
-      }
-      : {};
+    const category = searchParams.get('category');
+    const status = searchParams.get('status');
+
+    const query = {};
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    if (category && category !== 'All') {
+      query.category = category;
+    }
+
+    if (status && status !== 'All') {
+      if (status === 'active') query.isActive = true;
+      if (status === 'inactive') query.isActive = false;
+    }
 
     const skip = (page - 1) * limit;
 

@@ -24,8 +24,14 @@ const menuItems = [
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
+import { useAppContext } from '@/context/AppContext';
+
 export default function ModernAdminSidebar({ session, isOpen, onClose }) {
   const pathname = usePathname();
+  const { user: contextUser } = useAppContext();
+
+  // Use context user if available (for real-time updates), otherwise fall back to session user
+  const user = contextUser || session?.user;
 
   const isActive = (href, exact) => {
     if (exact) return pathname === href;
@@ -123,14 +129,14 @@ export default function ModernAdminSidebar({ session, isOpen, onClose }) {
           <div className="p-4 border-t border-white/10 bg-black/20">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center text-white font-bold shadow-lg border-2 border-[#0a1f1f] overflow-hidden">
-                {session?.user?.avatar ? (
-                  <img src={session.user.avatar} alt={session.user.name} className="w-full h-full object-cover" />
+                {user?.avatar ? (
+                  <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                 ) : (
-                  session?.user?.name?.charAt(0) || 'A'
+                  user?.name?.charAt(0) || 'A'
                 )}
               </div>
               <div className="overflow-hidden">
-                <p className="font-bold text-white truncate">{session.user.name}</p>
+                <p className="font-bold text-white truncate">{user?.name || 'Admin'}</p>
                 <p className="text-xs text-gray-400 truncate">Administrator</p>
               </div>
             </div>

@@ -1,78 +1,129 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import ProfileEditModal from '@/components/ProfileEditModal';
+import Image from 'next/image';
 import { useAppContext } from '@/context/AppContext';
-import { updateUserProfile } from '@/lib/actions/profile';
-import { toast } from 'sonner';
+import { formatDate } from '@/lib/utils';
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Edit,
+  Calendar,
+  ShieldCheck,
+  Settings
+} from 'lucide-react';
 
 export default function AdminSettingsPage() {
-  const { user, refreshUser } = useAppContext();
-  const [name, setName] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      setName(user.name);
-    }
-  }, [user]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const result = await updateUserProfile({ name });
-
-    if (result.success) {
-      toast.success(result.message);
-      refreshUser(); // Refresh user data in the context
-    } else {
-      toast.error(result.error);
-    }
-    setLoading(false);
-  };
+  const { user } = useAppContext();
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   if (!user) {
-    return (
-      <div className="p-6">
-        <p>Loading user data...</p>
-      </div>
-    );
+    return <div className="p-8 text-center text-gray-500">Loading profile...</div>;
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Settings</h1>
-        <p className="text-gray-600 dark:text-gray-400">Update your administrator profile</p>
+    <div className="space-y-6 p-4 md:p-8 font-sans max-w-7xl mx-auto">
+
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+            Admin Settings
+          </h1>
+          <p className="text-gray-500 font-medium">
+            Manage your administrator profile and preferences.
+          </p>
+        </div>
+        <button
+          onClick={() => setEditModalOpen(true)}
+          className="btn-add-animated"
+        >
+          <span>
+            <Edit className="h-4 w-4" />
+            Edit Profile
+          </span>
+        </button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Profile Information</CardTitle>
-          <CardDescription>This is how your name appears in the application.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
-            <div>
-              <Label htmlFor="adminName">Admin Name</Label>
-              <Input
-                id="adminName"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1"
-                required
-              />
+      {/* HERO PROFILE CARD */}
+      <div
+        className="relative overflow-hidden rounded-[2.5rem] text-white shadow-xl p-8 bg-cover bg-center"
+        style={{ backgroundImage: "url('/ui/profilecardBG2.png')" }}
+      >
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/60 md:bg-black/50" />
+
+        <div className="relative z-10">
+          <div className="flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
+            {/* Avatar */}
+            <div className="relative group">
+              <div className="w-32 h-32 rounded-full border-4 border-white/20 shadow-2xl overflow-hidden bg-[#0a1f1f]">
+                <Image
+                  src={user.avatar || '/icons/default_avatar.png'}
+                  alt={user.name}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+              <div className="absolute -bottom-2 -right-2 bg-green-500 text-white p-2 rounded-full border-4 border-[#0a1f1f]">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
             </div>
-            <Button type="submit" disabled={loading} className="bg-green-600 hover:bg-green-700">
-              {loading ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+
+            {/* Info */}
+            <div className="flex-1 space-y-4">
+              <div>
+                <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+                  <h2 className="text-4xl font-black tracking-tight">{user.name}</h2>
+                  <span className="bg-green-500/20 text-green-300 border border-green-500/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                    Administrator
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap justify-center md:justify-start gap-4 text-gray-300 text-sm font-medium">
+                  <div className="flex items-center gap-2 bg-white/5 py-1.5 px-3 rounded-lg border border-white/10">
+                    <Mail className="w-4 h-4 text-green-400" /> {user.email}
+                  </div>
+                  <div className="flex items-center gap-2 bg-white/5 py-1.5 px-3 rounded-lg border border-white/10">
+                    <Calendar className="w-4 h-4 text-purple-400" /> Joined {formatDate(user.createdAt || new Date()).split(',')[0]}
+                  </div>
+                  {user.phone && (
+                    <div className="flex items-center gap-2 bg-white/5 py-1.5 px-3 rounded-lg border border-white/10">
+                      <Phone className="w-4 h-4 text-blue-400" /> {user.phone}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Address Badge */}
+              {user.address && (
+                <div className="inline-flex items-center gap-2 bg-white/10 py-2 px-4 rounded-full text-sm font-medium border border-white/20 backdrop-blur-sm">
+                  <MapPin className="w-4 h-4 text-red-400" />
+                  {user.address}
+                </div>
+              )}
+
+              {!user.address && !user.phone && (
+                <p className="text-gray-400 text-sm italic">
+                  Complete your profile details to look more professional!
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+      <ProfileEditModal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        user={user}
+      />
     </div>
   );
 }

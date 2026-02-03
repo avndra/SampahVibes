@@ -44,7 +44,6 @@ export default function ModernAdminDashboard({
   recentActivities: initialRecentActivities = [],
   lowStockProducts = []
 }) {
-  const [searchTerm, setSearchTerm] = useState('');
   const [isExporting, setIsExporting] = useState(false);
 
   const processedRecentActivities = useMemo(() => {
@@ -75,20 +74,7 @@ export default function ModernAdminDashboard({
     });
   }, [lowStockProducts]);
 
-  const [filteredActivities, setFilteredActivities] = useState(processedRecentActivities);
 
-  useEffect(() => {
-    if (!searchTerm) {
-      setFilteredActivities(processedRecentActivities);
-      return;
-    }
-
-    const filtered = processedRecentActivities.filter(activity =>
-      activity.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      activity.action.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredActivities(filtered);
-  }, [searchTerm, processedRecentActivities]);
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -185,36 +171,36 @@ export default function ModernAdminDashboard({
       value: analyticsData.totalPoints?.toLocaleString() || '0',
       change: '+12%',
       icon: DollarSign,
-      color: 'text-amber-600',
-      iconBg: 'bg-white',
-      gradient: 'bg-gradient-to-br from-amber-50 to-orange-100 border-amber-200'
+      color: 'text-green-700',
+      iconBg: 'bg-white/80',
+      gradient: 'bg-gradient-to-br from-green-50 to-emerald-100 border-green-200'
     },
     {
       title: 'Total Users',
       value: totalUsers.toLocaleString(),
       change: '+5%',
       icon: Users,
-      color: 'text-blue-600',
-      iconBg: 'bg-white',
-      gradient: 'bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200'
+      color: 'text-emerald-700',
+      iconBg: 'bg-white/80',
+      gradient: 'bg-gradient-to-br from-emerald-50 to-teal-100 border-emerald-200'
     },
     {
       title: 'Recycled (kg)',
       value: analyticsData.totalWeight?.toFixed(2) || '0.00',
       change: '+18%',
       icon: TrendingUp,
-      color: 'text-emerald-600',
-      iconBg: 'bg-white',
-      gradient: 'bg-gradient-to-br from-emerald-50 to-teal-100 border-emerald-200'
+      color: 'text-teal-700',
+      iconBg: 'bg-white/80',
+      gradient: 'bg-gradient-to-br from-teal-50 to-cyan-100 border-teal-200'
     },
     {
       title: 'Total Scans',
       value: analyticsData.totalDeposits?.toLocaleString() || '0',
       change: '+8%',
       icon: Package,
-      color: 'text-violet-600',
-      iconBg: 'bg-white',
-      gradient: 'bg-gradient-to-br from-violet-50 to-purple-100 border-purple-200'
+      color: 'text-lime-700',
+      iconBg: 'bg-white/80',
+      gradient: 'bg-gradient-to-br from-lime-50 to-green-100 border-lime-200'
     },
   ];
 
@@ -230,15 +216,6 @@ export default function ModernAdminDashboard({
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="relative group flex-1 md:flex-none">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 group-focus-within:text-green-600 transition-colors" />
-            <Input
-              placeholder="Search analytics..."
-              className="pl-10 w-full md:w-64 bg-white border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all shadow-sm"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
           <Button
             onClick={handleExport}
             disabled={isExporting}
@@ -284,18 +261,14 @@ export default function ModernAdminDashboard({
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 bg-white border-gray-100 shadow-sm rounded-2xl">
+      <div className="grid grid-cols-1 gap-6">
+        <Card className="bg-white border-gray-100 shadow-sm rounded-2xl">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-xl font-bold text-gray-900">Activity Overview</CardTitle>
                 <CardDescription className="text-gray-500">Points generation over time</CardDescription>
               </div>
-              <select className="bg-gray-50 border-none text-sm font-medium rounded-lg px-3 py-1 text-gray-600 cursor-pointer hover:bg-gray-100 transition-colors">
-                <option>This Year</option>
-                <option>Last Year</option>
-              </select>
             </div>
           </CardHeader>
           <CardContent>
@@ -316,35 +289,6 @@ export default function ModernAdminDashboard({
             </div>
           </CardContent>
         </Card>
-
-        {/* User Growth */}
-        <Card className="bg-white border-gray-100 shadow-sm rounded-2xl">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-xl font-bold text-gray-900">User Growth</CardTitle>
-                <CardDescription className="text-gray-500">New signups this month</CardDescription>
-              </div>
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <Users className="w-5 h-5 text-blue-600" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-80 w-full">
-              <EChart
-                type="bar"
-                data={[
-                  { name: 'Week 1', value: 45 },
-                  { name: 'Week 2', value: 80 },
-                  { name: 'Week 3', value: 120 },
-                  { name: 'Week 4', value: 160 },
-                ]}
-                colors={['#3b82f6']}
-              />
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Recent Activity & Inventory */}
@@ -356,7 +300,7 @@ export default function ModernAdminDashboard({
           </CardHeader>
           <CardContent className="px-0">
             <div className="space-y-1 px-2">
-              {filteredActivities.slice(0, 6).map((activity, i) => (
+              {processedRecentActivities.slice(0, 6).map((activity, i) => (
                 <div key={activity.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors group cursor-pointer">
                   <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-gray-200">
                     <Zap className="w-5 h-5 text-gray-500 group-hover:text-yellow-500 transition-colors" />

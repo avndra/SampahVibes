@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import AdminProductForm from '@/components/admin/AdminProductForm';
 import { useDebounce } from 'use-debounce';
+import { PRODUCT_CATEGORIES } from '@/lib/config';
 
 export default function ModernAdminProductsPage() {
   const [products, setProducts] = useState([]);
@@ -29,12 +30,17 @@ export default function ModernAdminProductsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
+  // Filter States
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterCategory, setFilterCategory] = useState('All');
+  const [filterStatus, setFilterStatus] = useState('All');
+
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/products?page=${page}&search=${debouncedSearchTerm}&limit=10`);
+      const response = await fetch(`/api/admin/products?page=${page}&search=${debouncedSearchTerm}&limit=10&category=${filterCategory}&status=${filterStatus}`);
       if (response.ok) {
         const data = await response.json();
         setProducts(data.products);
@@ -48,7 +54,7 @@ export default function ModernAdminProductsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, debouncedSearchTerm]);
+  }, [page, debouncedSearchTerm, filterCategory, filterStatus]);
 
   useEffect(() => {
     fetchProducts();
@@ -147,10 +153,62 @@ export default function ModernAdminProductsPage() {
             <CardTitle className="text-lg font-bold text-gray-900">Product Catalog</CardTitle>
             <CardDescription>View and manage all available rewards</CardDescription>
           </div>
-          <Button variant="outline" size="sm" className="hidden md:flex">
+          <Button
+            variant={showFilters ? "secondary" : "outline"}
+            size="sm"
+            className="hidden md:flex"
+            onClick={() => setShowFilters(!showFilters)}
+          >
             <Filter className="w-4 h-4 mr-2" /> Filter
           </Button>
         </CardHeader>
+
+        {/* Filter Bar */}
+        {showFilters && (
+          <div className="bg-gray-50/50 p-4 border-b border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-4 animate-in slide-in-from-top-2">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 mb-1 block">Category</label>
+              <select
+                className="w-full bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5"
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+              >
+                <option value="All">All Categories</option>
+                {PRODUCT_CATEGORIES.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 mb-1 block">Status</label>
+              <select
+                className="w-full bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                <option value="All">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div className="flex items-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setFilterCategory('All');
+                  setFilterStatus('All');
+                  setSearchTerm('');
+                }}
+                className="text-red-500 hover:text-red-700 hover:bg-red-50"
+              >
+                Reset Filters
+              </Button>
+            </div>
+          </div>
+        )}
         <CardContent className="p-0">
           {loading && products.length === 0 ? (
             <div className="text-center py-12">

@@ -2,7 +2,7 @@
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, PieChart as RechartsPieChart, Cell } from 'recharts';
 
-const EChart = ({ type, data, dataKey, secondDataKey, colors = [] }) => {
+const EChart = ({ type, data, dataKey, secondDataKey, colors = [], color }) => {
   if (type === 'bar') {
     return (
       <ResponsiveContainer width="100%" height="100%">
@@ -10,14 +10,14 @@ const EChart = ({ type, data, dataKey, secondDataKey, colors = [] }) => {
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           <XAxis dataKey="name" />
           <YAxis />
-          <Tooltip 
-            contentStyle={{ 
+          <Tooltip
+            contentStyle={{
               borderRadius: '8px',
               border: '1px solid #e5e7eb',
               background: 'white'
             }}
           />
-          <Bar dataKey={dataKey} fill="#3b82f6" />
+          <Bar dataKey={dataKey} fill={colors[0] || color || '#3b82f6'} />
         </BarChart>
       </ResponsiveContainer>
     );
@@ -27,21 +27,21 @@ const EChart = ({ type, data, dataKey, secondDataKey, colors = [] }) => {
         <AreaChart data={data}>
           <defs>
             <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              <stop offset="5%" stopColor={colors[0] || color || '#3b82f6'} stopOpacity={0.3} />
+              <stop offset="95%" stopColor={colors[0] || color || '#3b82f6'} stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           <XAxis dataKey="month" />
           <YAxis />
-          <Tooltip 
-            contentStyle={{ 
+          <Tooltip
+            contentStyle={{
               borderRadius: '8px',
               border: '1px solid #e5e7eb',
               background: 'white'
             }}
           />
-          <Area type="monotone" dataKey={dataKey} stroke="#3b82f6" fill="url(#colorGradient)" />
+          <Area type="monotone" dataKey={dataKey} stroke={colors[0] || color || '#3b82f6'} fill="url(#colorGradient)" />
         </AreaChart>
       </ResponsiveContainer>
     );
@@ -49,8 +49,8 @@ const EChart = ({ type, data, dataKey, secondDataKey, colors = [] }) => {
     return (
       <ResponsiveContainer width="100%" height="100%">
         <RechartsPieChart>
-          <Tooltip 
-            contentStyle={{ 
+          <Tooltip
+            contentStyle={{
               borderRadius: '8px',
               border: '1px solid #e5e7eb',
               background: 'white'
